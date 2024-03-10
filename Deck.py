@@ -53,3 +53,5 @@ class Deck:
 
 test = Deck(1)
 print(test.colors)
+test2 = Deck(2)
+print(test2.colors)
