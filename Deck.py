@@ -49,3 +49,7 @@ class Deck:
         random.shuffle(self.cards)
 
         self.cardsLeft = len(self.cards)
+
+
+test = Deck(1)
+print(test.colors)
