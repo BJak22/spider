@@ -52,9 +52,9 @@ class Deck:
         self.cardsLeft = len(self.cards)
 
 
-test = Deck(1)
-print(test.colors)
-test2 = Deck(2)
-print(test2.colors)
+#test = Deck(1)
+#print(test.colors)
+#test2 = Deck(2)
+#print(test2.colors)
 
 board = Board()
