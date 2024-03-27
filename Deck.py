@@ -1,6 +1,5 @@
 import random
 from Card import Card
-from Board import Board
 
 CardColors = ['spades', 'hearts', 'diamonds', 'clubs']
 
@@ -56,5 +55,3 @@ class Deck:
 #print(test.colors)
 #test2 = Deck(2)
 #print(test2.colors)
-
-board = Board()
