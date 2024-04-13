@@ -1,4 +1,5 @@
 import tkinter as tk
+from Card import Card
 from Card import LabelCard
 from Queue import Queue
 from Deck import Deck
@@ -55,25 +56,19 @@ class Board:
 
     def move_start(self, event):
         self.move_data["object"] = self.canvas.find_closest(event.x, event.y)
-        canvasItemId = self.canvas.find_overlapping(event.x, event.y, event.x, event.y)
-        print(canvasItemId)
-        if canvasItemId[-1] in self.canvas.find_withtag("movable"):
-            print("true")
-            print(self.canvas.find_withtag("movable"))
-            self.move_data["x"] = event.x
-            self.move_data["y"] = event.y
-            cardCoords = self.canvas.coords(self.move_data["object"])
-            self.move_data["startX"] = cardCoords[0]
-            self.move_data["startY"] = cardCoords[1]
-            aux = (int(cardCoords[0]) - 150)
-            aux = int(aux / 150)
-            self.move_data["card"] = self.places[aux].lastCard
-            self.move_data["startPlace"] = self.places[aux]
-            self.canvas.tag_raise(self.move_data["object"])
-        else:
-            self.move_data["object"] = None
-            print("false")
-            print(self.canvas.find_withtag("movable"))
+        self.move_data["x"] = event.x
+        self.move_data["y"] = event.y
+        cardCoords = self.canvas.coords(self.move_data["object"])
+        self.move_data["startX"] = cardCoords[0]
+        self.move_data["startY"] = cardCoords[1]
+        aux = (int(cardCoords[0]) - 150)
+        aux = int(aux / 150)
+        cardId = self.move_data["object"][-1]
+        for i in self.cards:
+            if cardId == i.id:
+                self.move_data["card"] = i
+        self.move_data["startPlace"] = self.places[aux]
+        self.canvas.tag_raise(self.move_data["object"])
 
     def drop(self):
         cardCoords = self.canvas.coords(self.move_data["object"])
@@ -90,23 +85,25 @@ class Board:
             if self.places[aux].lastCard != None:
                 for i in self.cards:
                     if (i.value == self.places[aux].lastCard.value and i.color == self.places[aux].lastCard.color and
-                            i.grid == self.places[aux].grid):
-                        print(i.id)
+                            i.grid == self.places[aux].grid and
+                            self.places[aux].lastCard.color != self.move_data["card"].color):
                         self.canvas.dtag(i.id, "movable")
             self.places[aux].lastCard = self.move_data["card"]
+            self.move_data["card"].grid = self.places[aux].grid
             self.move_data["startPlace"].cards.pop()
             if len(self.move_data["startPlace"].cards) != 0:
-                self.move_data["startPlace"].lastCard =  self.move_data["startPlace"].cards[-1]
+                self.move_data["startPlace"].lastCard = self.move_data["startPlace"].cards[-1]
                 for i in self.cards:
                     if (i.value == self.move_data["startPlace"].lastCard.value
                             and i.color == self.move_data["startPlace"].lastCard.color):
-                        self.canvas.addtag_withtag("movable",i.id)
+                        self.canvas.addtag_withtag("movable", i.id)
             else:
                 self.move_data["startPlace"].lastCard = None
         else:
             x = self.move_data["startX"] - cardCoords[0]
             y = self.move_data["startY"] - cardCoords[1]
             self.canvas.move(self.move_data["object"], x, y)
+
 
     def move_stop(self, event):
         if self.move_data["object"] != None:
@@ -119,8 +116,18 @@ class Board:
             self.move_data["startY"] = 0
             self.move_data["Value"] = 0
 
+
+    def check_if_card_is_last(self):
+        for i in self.places:
+            if i.lastCard != None:
+                if (i.lastCard.color == self.move_data["card"].color and
+                    i.lastCard.value == self.move_data["card"].value and
+                    i.grid == self.move_data["card"].grid):
+                    return True
+        return False
+
     def move(self, event):
-        if self.move_data["object"] != None:
+        if self.check_if_card_is_last():
             if event.x < 100:
                 event.x = 100 - abs(event.x-100)
                 if(abs(event.x-100) > 10):
@@ -145,5 +152,7 @@ class Board:
             self.canvas.move(self.move_data["object"], dx, dy)
             self.move_data["x"] = event.x
             self.move_data["y"] = event.y
+        else:
+            print("to bedzie sie odpalac zeby ruszac kilka kart na raz")
 
 board = Board()
