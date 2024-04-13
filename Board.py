@@ -44,7 +44,7 @@ class Board:
         val = 0
         for i in self.places:
             self.cards.append(LabelCard(self.window, i.lastCard.color, i.lastCard.value,
-                                        tag, self.canvas, self.Images[val], i.CoordX + 50, i.CoordY + 70))
+                                        tag, self.canvas, self.Images[val], i.CoordX + 50, i.CoordY + 70, val % 10))
             val += 1
 
     def move_bind(self, tag):
@@ -89,9 +89,10 @@ class Board:
             self.places[aux].cards.append(self.move_data["card"])
             if self.places[aux].lastCard != None:
                 for i in self.cards:
-                    if i.value == self.places[aux].lastCard.value and i.color == self.places[aux].lastCard.color:
+                    if (i.value == self.places[aux].lastCard.value and i.color == self.places[aux].lastCard.color and
+                            i.grid == self.places[aux].grid):
                         print(i.id)
-                        self.canvas.dtag(i.id,"movable")
+                        self.canvas.dtag(i.id, "movable")
             self.places[aux].lastCard = self.move_data["card"]
             self.move_data["startPlace"].cards.pop()
             if len(self.move_data["startPlace"].cards) != 0:
