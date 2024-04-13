@@ -1,7 +1,7 @@
 import random
 from Card import Card
 
-CardColors = ['spades', 'hearts', 'diamonds', 'clubs']
+CardColors = ['S', 'H', 'D', 'C']
 
 
 class Deck:

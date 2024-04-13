@@ -7,7 +7,7 @@ class Card:
         self.value = value
 
 
-class LabelCard(Card):
-    def __init__(self, window, color, value, tag, canvas):
+class LabelCard(Card,):
+    def __init__(self, window, color, value, tag, canvas, image,coordX, coordY):
         Card.__init__(self, color, value)
-        canvas.create_rectangle(10, 10, 100, 100, fill="white", tags=tag)
+        self.id = canvas.create_image(coordX, coordY, image=image, tags=tag)
