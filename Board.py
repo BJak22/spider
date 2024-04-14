@@ -68,7 +68,15 @@ class Board:
             if cardId == i.id:
                 self.move_data["card"] = i
         self.move_data["startPlace"] = self.places[aux]
-        self.canvas.tag_raise(self.move_data["object"])
+        self.move_list = list()
+        if self.check_if_card_is_last():
+            self.move_list.append(self.move_data["object"])
+            self.canvas.tag_raise(self.move_data["object"])
+        else:
+            idList = self.canvas.find_overlapping(event.x, 60, event.x, 700)
+            for i in idList:
+                if i > 10:
+                    self.move_list.append(i)
 
     def drop(self):
         cardCoords = self.canvas.coords(self.move_data["object"])
@@ -127,32 +135,27 @@ class Board:
         return False
 
     def move(self, event):
-        if self.check_if_card_is_last():
-            if event.x < 100:
-                event.x = 100 - abs(event.x-100)
-                if(abs(event.x-100) > 10):
-                    event.x = 100
-            if event.y < 100:
-                event.y = 100 - abs(event.y - 100)
-                if (abs(event.y - 100) > 10):
-                    event.y = 100
+        if event.x < 100:
+            event.x = 100 - abs(event.x-100)
+            if(abs(event.x-100) > 10):
+                event.x = 100
+        if event.y < 100:
+            event.y = 100 - abs(event.y - 100)
+            if (abs(event.y - 100) > 10):
+                event.y = 100
 
-            if event.x > 1600:
-                event.x = 1100 - abs(event.x-1600)
-                if (abs(event.x-1600)>10):
-                    event.x = 1600
-            if event.y > 700:
-                event.y = 700 - abs(event.y - 700)
-                if (abs(event.y - 700) > 10):
-                    event.y = 700
-
-            dx = event.x - self.move_data["x"]
-            dy = event.y - self.move_data["y"]
-
-            self.canvas.move(self.move_data["object"], dx, dy)
-            self.move_data["x"] = event.x
-            self.move_data["y"] = event.y
-        else:
-            print("to bedzie sie odpalac zeby ruszac kilka kart na raz")
+        if event.x > 1600:
+            event.x = 1100 - abs(event.x-1600)
+            if (abs(event.x-1600)>10):
+                event.x = 1600
+        if event.y > 700:
+            event.y = 700 - abs(event.y - 700)
+            if (abs(event.y - 700) > 10):
+                event.y = 700
+        for i in self.move_list:
+            cardCoords = self.canvas.coords(i)
+            dx = event.x - cardCoords[0]
+            dy = event.y - cardCoords[1]
+            self.canvas.move(i, dx, dy + ((self.move_list.index(i))*20))
 
 board = Board()
