@@ -2,6 +2,8 @@ import random
 from Card import Card
 
 CardColors = ['S', 'H', 'D', 'C']
+BlackColors = ['S', 'C']
+RedColors = ['H', 'D']
 
 
 class Deck:
@@ -22,10 +24,13 @@ class Deck:
                         self.cards.append(Card(self.colors[0], j))
                         j += 1
             if level == 2:
-                tmp_color = random.choice(CardColors)
-                while self.colors.count(tmp_color) != 0:
-                    tmp_color = random.choice(CardColors)
-                self.colors.append(tmp_color)
+                if self.colors[0] in BlackColors:
+                    CardColors.remove("S")
+                    CardColors.remove("C")
+                else:
+                    CardColors.remove("H")
+                    CardColors.remove("D")
+                self.colors.append(random.choice(CardColors))
                 for color in self.colors:
                     i = 0
                     # 104 cards = 2*4*13 - 2 different colors on level 2

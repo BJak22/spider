@@ -45,7 +45,7 @@ class Board:
         val = 0
         for i in self.places:
             self.cards.append(LabelCard(self.window, i.lastCard.color, i.lastCard.value,
-                                        tag, self.canvas, self.Images[val], i.CoordX + 50, i.CoordY + 70, val % 10))
+                                        tag, self.canvas, self.Images[val], i.CoordX + 50, i.CoordY + 70, i.grid))
             val += 1
 
     def move_bind(self, tag):
@@ -72,14 +72,19 @@ class Board:
         idList = list()
         if self.check_if_card_is_last():
             self.move_list.append(self.move_data["object"])
-            self.canvas.tag_raise(self.move_data["object"])
+            while len(self.canvas.find_above(self.move_data["card"].id)) != 0:
+                self.canvas.tag_raise(self.move_data["object"])
             idList.append(self.move_data["object"][0])
         else:
             idList.extend(self.canvas.find_overlapping(event.x, event.y, event.x, 700))
+            removeList = list()
             for i in idList:
                 for j in self.cards:
-                    if i == j.id and j.value> self.move_data["card"].value:
-                        idList.remove(i)
+                    if i == j.id and j.value > self.move_data["card"].value:
+                        removeList.append(i)
+            for i in removeList:
+                if i in idList:
+                    idList.remove(i)
             for i in idList:
                 if i > 10:
                     self.move_list.append(i)
@@ -87,6 +92,12 @@ class Board:
             for j in idList:
                 if j == i.id:
                     self.move_data["cards"].append(i)
+        # sorting cards, so the list of cards in queue will be in correct order
+        self.quickSort(self.move_data["cards"], 0, len(self.move_data["cards"]) - 1)
+        self.move_data["cards"].reverse()
+        for i in self.move_data["cards"]:
+            while len(self.canvas.find_above(i.id)) != 0:
+                self.canvas.tag_raise(i.id)
 
     def partition(self,array, low, high):
         pivot = array[high]
@@ -112,43 +123,33 @@ class Board:
             self.quickSort(array, pi + 1, high)
 
     def drop(self):
-        lenOfQueue = len(self.move_data["startPlace"].cards)
         lenOfMoved = len(self.move_data["cards"])
-        leng = lenOfQueue - lenOfMoved
         cardCoords = self.canvas.coords(self.move_data["object"])
         # checking on which place the card is dropped
         aux = (int(cardCoords[0]) - 150)
         aux = int(aux / 150)
-        self.quickSort(self.move_data["cards"], 0, len(self.move_data["cards"]) -1)
-        self.move_data["cards"].reverse()
-        #print("przeniesiono:")
-        #for i in self.move_data["cards"]:
-            #print(i.value)
         if cardCoords[0] >= 150 and (self.places[aux].lastCard == None or
-                                     ((self.places[aux].lastCard.value - 1) == self.move_data["cards"][-1].value)):
+                    ((self.places[aux].lastCard.value - 1) == self.move_data["cards"][0].value)):
             self.places[aux].CoordY = 60 + (20 * (len(self.places[aux].cards)))
+            if(self.places[aux] == self.move_data["startPlace"]):
+                self.places[aux].CoordY -= 20
             x = self.places[aux].CoordX - cardCoords[0] + 50
             y = self.places[aux].CoordY - cardCoords[1] + 70
             for i in self.move_list:
                 self.canvas.move(i, x, y)
-                y += 20
             self.places[aux].cards.extend(self.move_data["cards"])
-            #print("karty na stosiku na ktory przeniosles:")
-            #for i in self.places[aux].cards:
-                #print(i.value)
             if self.places[aux].lastCard != None:
                 i = 0
                 if self.places[aux].lastCard.color != self.move_data["card"].color:
                     for i in self.cards:
                         if i.grid == self.places[aux].grid:
                             self.canvas.dtag(i.id, "movable")
-                self.places[aux].lastCard = self.move_data["cards"][-1]
+            self.places[aux].lastCard = self.move_data["cards"][-1]
+            for i in self.move_data["cards"]:
+                i.grid = self.places[aux].grid
             if len(self.move_data["startPlace"].cards) > lenOfMoved:
                 for i in range(len(self.move_data["cards"])):
                     self.move_data["startPlace"].cards.pop()
-                #print("karty ze stosika z ktotego przeniosles")
-                #for i in self.move_data["startPlace"].cards:
-                    #print(i.value)
                 self.move_data["startPlace"].lastCard = self.move_data["startPlace"].cards[-1]
                 listOfMovable = list()
                 i = len(self.move_data["startPlace"].cards) - 1
@@ -158,30 +159,39 @@ class Board:
                         listOfMovable.append(self.move_data["startPlace"].cards[i])
                         i -= 1
                         val += 1
-                print("movable ze starego")
-                for i in listOfMovable:
-                    print(i.value)
+                for i in self.cards:
+                    if i.grid == self.move_data["startPlace"].grid:
+                        self.canvas.dtag(i.id, "movable")
                 for i in listOfMovable:
                     for j in self.cards:
                         if (i.value == j.value and i.color == j.color) and j.grid == self.move_data["startPlace"].grid:
                             self.canvas.addtag_withtag("movable", j.id)
-                        elif j.grid == self.move_data["startPlace"].grid:
-                            self.canvas.dtag(j.id, "movable")
-                            print(j.value)
+
             else:
-                #print("brak kart na stosiku z ktorego przeniosles")
                 self.move_data["startPlace"].lastCard = None
                 self.move_data["startPlace"].cards.clear()
                 self.move_data["startPlace"].CoordY = 60
         else:
             x = self.move_data["startX"] - cardCoords[0]
             y = self.move_data["startY"] - cardCoords[1]
-            self.canvas.move(self.move_data["object"], x, y)
+            for i in self.move_list:
+                self.canvas.move(i, x, y)
 
 
     def move_stop(self, event):
         if self.move_data["object"] != None:
             self.drop()
+            #for i in self.places:
+                #print("----------")
+                #print("grid: " + str(i.grid))
+                #for j in i.cards:
+                    #print(j.value)
+            #for i in self.places:
+                #print("----------")
+                #if(i.lastCard != None):
+                    #print("grid: " + str(i.grid)+ " last:" + str(i.lastCard.value))
+            # for j in i.cards:
+            # print(j.value)
             self.move_data["card"] = None
             self.move_data["cards"].clear()
             self.move_data["object"] = None
@@ -190,6 +200,10 @@ class Board:
             self.move_data["startX"] = 0
             self.move_data["startY"] = 0
             self.move_data["Value"] = 0
+            #lista = self.canvas.find_withtag("movable")
+            #for i in range(21):
+                #if i>10 and i not in lista:
+                    #print(i)
 
 
     def check_if_card_is_last(self):
