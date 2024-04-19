@@ -10,3 +10,4 @@ class Queue:
         self.cards.append(card)
         self.grid = grid
         self.lastCard = card
+        self.idList = list()
