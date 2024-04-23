@@ -18,7 +18,7 @@ class Board:
         self.canvas.pack()
 
         # create deck and list of images of cards
-        self.deck = Deck(2)
+        self.deck = Deck(1)
         self.Images = []
         for i in self.deck.cards:
             Aux = str(i.value) + i.color + ".png"
@@ -249,25 +249,27 @@ class Board:
                     self.canvas.addtag_withtag("movable", i)
 
             else:
+                self.move_data["startPlace"].lastCard = None
+                self.move_data["startPlace"].cards.clear()
+                self.move_data["startPlace"].idList.clear()
+                self.move_data["startPlace"].CoordY = 60
                 if len(self.move_data["startPlace"].HiddenCards) > 0:
                     self.move_data["startPlace"].lastCard = self.move_data["startPlace"].HiddenCards[-1]
-                    print(self.move_data["startPlace"].lastCard)
                     self.move_data["startPlace"].cards.append(self.move_data["startPlace"].HiddenCards[-1])
                     self.move_data["startPlace"].idList.append(self.move_data["startPlace"].HiddenIdList[-1])
-                    print(self.move_data["startPlace"].HiddenVals[-1])
                     im = self.Images[self.move_data["startPlace"].HiddenVals[-1]]
                     self.canvas.itemconfig(self.move_data["startPlace"].HiddenIdList[-1], image=im, tag="movable")
+                    auxCard = None
+                    for i in self.hiddenCards:
+                        if (i.value == self.move_data["startPlace"].HiddenCards[-1].value and
+                                i.color == self.move_data["startPlace"].HiddenCards[-1].color and
+                                i.grid == self.move_data["startPlace"].grid):
+                            auxCard = i
+                    self.cards.append(auxCard)
                     self.move_data["startPlace"].HiddenCards.pop()
                     self.move_data["startPlace"].HiddenIdList.pop()
                     self.move_data["startPlace"].HiddenVals.pop()
-                    print(len(self.move_data["startPlace"].HiddenCards))
-                    print(len(self.move_data["startPlace"].HiddenIdList))
                     self.move_data["startPlace"].CoordY += 10
-                else:
-                    self.move_data["startPlace"].lastCard = None
-                    self.move_data["startPlace"].cards.clear()
-                    self.move_data["startPlace"].idList.clear()
-                    self.move_data["startPlace"].CoordY = 60
         else:
             x = self.move_data["startX"] - cardCoords[0]
             y = self.move_data["startY"] - cardCoords[1]

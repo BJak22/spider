@@ -4,15 +4,9 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="9b1bc026-42a5-46ce-ab18-f99c73858a3c" name="Changes" comment="update 13.04">
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_Update_at_14_04_2024_09_57_[Changes]/shelved.patch" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_Update_at_14_04_2024_09_57__Changes_.xml" beforeDir="false" />
+    <list default="true" id="9b1bc026-42a5-46ce-ab18-f99c73858a3c" name="Changes" comment="add reversed cards">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Back.png" beforeDir="false" afterPath="$PROJECT_DIR$/Back.png" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Board.py" beforeDir="false" afterPath="$PROJECT_DIR$/Board.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Queue.py" beforeDir="false" afterPath="$PROJECT_DIR$/Queue.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Stack.py" beforeDir="false" afterPath="$PROJECT_DIR$/Stack.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -57,7 +51,7 @@
   }
 }</component>
   <component name="RunManager" selected="Python.Board">
-    <configuration name="Board" type="PythonConfigurationType" factoryName="Python" nameIsGenerated="true">
+    <configuration name="Board" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="spider" />
       <option name="ENV_FILES" value="" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -65,7 +59,7 @@
       <envs>
         <env name="PYTHONUNBUFFERED" value="1" />
       </envs>
-      <option name="SDK_HOME" value="C:\Users\barto\PycharmProjects\pythonProject1\venv\Scripts\python.exe" />
+      <option name="SDK_HOME" value="" />
       <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
@@ -124,10 +118,15 @@
       <method v="2" />
     </configuration>
     <list>
-      <item itemvalue="Python.Board" />
       <item itemvalue="Python.Deck" />
       <item itemvalue="Python.Queue" />
+      <item itemvalue="Python.Board" />
     </list>
+    <recent_temporary>
+      <list>
+        <item itemvalue="Python.Board" />
+      </list>
+    </recent_temporary>
   </component>
   <component name="SharedIndexes">
     <attachedChunks>
@@ -184,7 +183,15 @@
       <option name="project" value="LOCAL" />
       <updated>1713118102453</updated>
     </task>
-    <option name="localTasksCounter" value="6" />
+    <task id="LOCAL-00006" summary="add reversed cards">
+      <option name="closed" value="true" />
+      <created>1713889894555</created>
+      <option name="number" value="00006" />
+      <option name="presentableId" value="LOCAL-00006" />
+      <option name="project" value="LOCAL" />
+      <updated>1713889894555</updated>
+    </task>
+    <option name="localTasksCounter" value="7" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -203,6 +210,7 @@
     <MESSAGE value="house edit 1" />
     <MESSAGE value="add cards pngs, edit moving of one card" />
     <MESSAGE value="update 13.04" />
-    <option name="LAST_COMMIT_MESSAGE" value="update 13.04" />
+    <MESSAGE value="add reversed cards" />
+    <option name="LAST_COMMIT_MESSAGE" value="add reversed cards" />
   </component>
 </project>
