@@ -11,3 +11,6 @@ class Queue:
         self.grid = grid
         self.lastCard = card
         self.idList = list()
+        self.HiddenCards = list()
+        self.HiddenIdList = list()
+        self.HiddenVals = list()

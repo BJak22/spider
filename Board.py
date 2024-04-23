@@ -19,13 +19,15 @@ class Board:
 
         # create deck and list of images of cards
         self.deck = Deck(2)
-        self.stack = Stack(self.deck, self.canvas)
         self.Images = []
         for i in self.deck.cards:
             Aux = str(i.value) + i.color + ".png"
             self.Images.append(tk.PhotoImage(file=Aux))
+        self.Images.append(tk.PhotoImage(file="Back.png"))
 
+        self.stack = Stack(self.deck, self.canvas, self.Images[-1])
         self.cards = list()
+        self.hiddenCards = list()
         self.places = list()
 
         self.grids = [200, 350, 500, 650, 800, 950, 1100, 1250, 1400, 1550]
@@ -35,17 +37,29 @@ class Board:
             self.places.append(Queue(i, self.canvas, self.deck.cards[val], val))
             val += 1
 
+        for i in self.places:
+            ran = 5
+            if i.grid > 3:
+                ran -= 1
+            for j in range(ran):
+                i.HiddenCards.append(self.deck.cards[val])
+                i.HiddenVals.append(val)
+                val += 1
         # data of object that is moving
         self.move_data = {"object": None, "x": 0, "y": 0, "startX": 0, "startY": 0, "cards": [],
                           "startPlace": None, "card": None}
         self.add_cards("movable")
         self.move_bind("movable")
         self.add_cards_bind("addCards")
-
         self.window.mainloop()
 
     def add_cards(self, tag):
         val = 0
+        for i in self.places:
+            for j in i.HiddenCards:
+                self.hiddenCards.append(LabelCard(self.window, j.color, j.value, None, self.canvas, self.Images[-1],
+                                                  i.CoordX+50, i.CoordY + 70, i.grid))
+                i.CoordY += 10
         for i in self.places:
             self.cards.append(LabelCard(self.window, i.lastCard.color, i.lastCard.value,
                                         tag, self.canvas, self.Images[val], i.CoordX + 50, i.CoordY + 70, i.grid))
@@ -54,6 +68,9 @@ class Board:
             for j in self.cards:
                 if j.grid == i.grid:
                     i.idList.append(j.id)
+            for j in self.hiddenCards:
+                if j.grid == i.grid:
+                    i.HiddenIdList.append(j.id)
 
     def move_bind(self, tag):
         self.canvas.tag_bind(tag, "<ButtonPress-1>", self.move_start)
@@ -95,6 +112,8 @@ class Board:
                     if j.grid == i.grid and j.id not in i.idList:
                         i.idList.append(j.id)
             self.stack.cards = self.stack.cards[10:]
+            if len(self.stack.cards) == 0:
+                self.canvas.delete(self.stack.id)
             print("zostalo: "+str(len(self.stack.cards))+" kart")
         elif len(self.stack.cards) == 0:
             print("brak kart")
@@ -102,6 +121,9 @@ class Board:
             print("zakryj wszystkie pola")
 
     def move_start(self, event):
+        ListcardsIds= list()
+        for i in self.places:
+            ListcardsIds.extend(i.idList)
         self.move_data["object"] = self.canvas.find_closest(event.x, event.y)
         self.move_data["x"] = event.x
         self.move_data["y"] = event.y
@@ -134,7 +156,7 @@ class Board:
                 if i in idList:
                     idList.remove(i)
             for i in idList:
-                if i > 11:
+                if i in ListcardsIds:
                     self.move_list.append(i)
         for i in self.cards:
             for j in idList:
@@ -178,7 +200,7 @@ class Board:
         aux = int(aux / 150)
         if cardCoords[0] >= 150 and (self.places[aux].lastCard == None or
                     ((self.places[aux].lastCard.value - 1) == self.move_data["cards"][0].value)):
-            self.places[aux].CoordY = 60 + (30 * (len(self.places[aux].cards)))
+            self.places[aux].CoordY = 60 + (30 * (len(self.places[aux].cards))) + (10 * len(self.places[aux].HiddenCards))
             if(self.places[aux] == self.move_data["startPlace"]):
                 self.places[aux].CoordY -= 30
             x = self.places[aux].CoordX - cardCoords[0] + 50
@@ -227,10 +249,25 @@ class Board:
                     self.canvas.addtag_withtag("movable", i)
 
             else:
-                self.move_data["startPlace"].lastCard = None
-                self.move_data["startPlace"].cards.clear()
-                self.move_data["startPlace"].idList.clear()
-                self.move_data["startPlace"].CoordY = 60
+                if len(self.move_data["startPlace"].HiddenCards) > 0:
+                    self.move_data["startPlace"].lastCard = self.move_data["startPlace"].HiddenCards[-1]
+                    print(self.move_data["startPlace"].lastCard)
+                    self.move_data["startPlace"].cards.append(self.move_data["startPlace"].HiddenCards[-1])
+                    self.move_data["startPlace"].idList.append(self.move_data["startPlace"].HiddenIdList[-1])
+                    print(self.move_data["startPlace"].HiddenVals[-1])
+                    im = self.Images[self.move_data["startPlace"].HiddenVals[-1]]
+                    self.canvas.itemconfig(self.move_data["startPlace"].HiddenIdList[-1], image=im, tag="movable")
+                    self.move_data["startPlace"].HiddenCards.pop()
+                    self.move_data["startPlace"].HiddenIdList.pop()
+                    self.move_data["startPlace"].HiddenVals.pop()
+                    print(len(self.move_data["startPlace"].HiddenCards))
+                    print(len(self.move_data["startPlace"].HiddenIdList))
+                    self.move_data["startPlace"].CoordY += 10
+                else:
+                    self.move_data["startPlace"].lastCard = None
+                    self.move_data["startPlace"].cards.clear()
+                    self.move_data["startPlace"].idList.clear()
+                    self.move_data["startPlace"].CoordY = 60
         else:
             x = self.move_data["startX"] - cardCoords[0]
             y = self.move_data["startY"] - cardCoords[1]
