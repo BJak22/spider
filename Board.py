@@ -100,7 +100,7 @@ class Board:
                 for j in self.cards:
                     if j.grid == i.grid and j.id not in move:
                         self.canvas.dtag(j.id, "movable")
-                i.CoordY = 70 + (30 * (len(i.cards) - 1))
+                i.CoordY = 70 + (30 * (len(i.cards) - 1)) + (10 * len(i.HiddenCards))
                 self.cards.append(LabelCard(self.window, self.deck.cards[val].color, self.deck.cards[val].value,
                                            "movable", self.canvas, self.Images[val], i.CoordX + 50, i.CoordY + 90, i.grid))
                 tmpCard = Card(self.deck.cards[val].color, self.deck.cards[val].value)
@@ -230,6 +230,38 @@ class Board:
             self.places[aux].lastCard = self.move_data["cards"][-1]
             for i in self.move_data["cards"]:
                 i.grid = self.places[aux].grid
+
+            if self.check_if_completed(self.places[aux]):
+                if len(self.places[aux].cards) == 13:
+                    for i in self.places[aux].idList:
+                        self.canvas.delete(i)
+                    self.places[aux].CoordY -= 30 * (len(self.places[aux].cards))
+                    self.places[aux].cards.clear()
+                    self.places[aux].idList.clear()
+                    self.places[aux].lastCard = None
+                    if len(self.places[aux].HiddenCards) > 0:
+                        self.places[aux].lastCard = self.places[aux].HiddenCards[-1]
+                        self.places[aux].cards.append(self.places[aux].HiddenCards[-1])
+                        self.places[aux].idList.append(self.places[aux].HiddenIdList[-1])
+                        im = self.Images[self.places[aux].HiddenVals[-1]]
+                        self.canvas.itemconfig(self.places[aux].HiddenIdList[-1], image=im, tag="movable")
+                        auxCard = None
+                        for i in self.hiddenCards:
+                            if (i.value == self.places[aux].HiddenCards[-1].value and
+                                    i.color == self.places[aux].HiddenCards[-1].color and
+                                    i.grid == self.places[aux].grid):
+                                auxCard = i
+                        self.cards.append(auxCard)
+                        self.places[aux].HiddenCards.pop()
+                        self.places[aux].HiddenIdList.pop()
+                        self.places[aux].HiddenVals.pop()
+                        self.places[aux].CoordY += 10
+                else:
+                    for i in range(13):
+                        self.places[aux].cards.pop()
+                        self.places[aux].idList.pop()
+                    self.places[aux].lastCard = self.places[aux].cards[-1]
+
             if len(self.move_data["startPlace"].cards) > lenOfMoved:
                 for i in self.move_data["cards"]:
                     self.move_data["startPlace"].cards.pop()
@@ -276,6 +308,19 @@ class Board:
             for i in self.move_list:
                 self.canvas.move(i, x, y)
 
+    def check_if_completed(self, place):
+        val = 1
+        col = place.lastCard.color
+        leng = len(place.cards) -1
+        while val < 14 and leng >= 0:
+            if place.cards[leng].value != val or place.cards[leng].color != col:
+                return False
+            val += 1
+            leng -= 1
+        if val == 14:
+            print("complete")
+            return True
+        return False
 
     def move_stop(self, event):
         if self.move_data["object"] != None:
@@ -299,6 +344,7 @@ class Board:
             self.move_data["startX"] = 0
             self.move_data["startY"] = 0
             self.move_data["Value"] = 0
+
             #lista = self.canvas.find_withtag("movable")
             #for i in range(21):
                 #if i>10 and i not in lista:
