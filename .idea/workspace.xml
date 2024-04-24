@@ -4,7 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="9b1bc026-42a5-46ce-ab18-f99c73858a3c" name="Changes" comment="add reversed cards">
+    <list default="true" id="9b1bc026-42a5-46ce-ab18-f99c73858a3c" name="Changes" comment="delete completed series">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Board.py" beforeDir="false" afterPath="$PROJECT_DIR$/Board.py" afterDir="false" />
     </list>
@@ -199,7 +199,15 @@
       <option name="project" value="LOCAL" />
       <updated>1713890810488</updated>
     </task>
-    <option name="localTasksCounter" value="8" />
+    <task id="LOCAL-00008" summary="delete completed series">
+      <option name="closed" value="true" />
+      <created>1713956179174</created>
+      <option name="number" value="00008" />
+      <option name="presentableId" value="LOCAL-00008" />
+      <option name="project" value="LOCAL" />
+      <updated>1713956179174</updated>
+    </task>
+    <option name="localTasksCounter" value="9" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -219,6 +227,7 @@
     <MESSAGE value="add cards pngs, edit moving of one card" />
     <MESSAGE value="update 13.04" />
     <MESSAGE value="add reversed cards" />
-    <option name="LAST_COMMIT_MESSAGE" value="add reversed cards" />
+    <MESSAGE value="delete completed series" />
+    <option name="LAST_COMMIT_MESSAGE" value="delete completed series" />
   </component>
 </project>

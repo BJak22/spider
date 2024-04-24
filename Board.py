@@ -115,6 +115,9 @@ class Board:
             if len(self.stack.cards) == 0:
                 self.canvas.delete(self.stack.id)
             print("zostalo: "+str(len(self.stack.cards))+" kart")
+            for i in self.places():
+                if self.check_if_completed(i):
+                    self.delete_completed(i)
         elif len(self.stack.cards) == 0:
             print("brak kart")
         else:
@@ -232,35 +235,7 @@ class Board:
                 i.grid = self.places[aux].grid
 
             if self.check_if_completed(self.places[aux]):
-                if len(self.places[aux].cards) == 13:
-                    for i in self.places[aux].idList:
-                        self.canvas.delete(i)
-                    self.places[aux].CoordY -= 30 * (len(self.places[aux].cards))
-                    self.places[aux].cards.clear()
-                    self.places[aux].idList.clear()
-                    self.places[aux].lastCard = None
-                    if len(self.places[aux].HiddenCards) > 0:
-                        self.places[aux].lastCard = self.places[aux].HiddenCards[-1]
-                        self.places[aux].cards.append(self.places[aux].HiddenCards[-1])
-                        self.places[aux].idList.append(self.places[aux].HiddenIdList[-1])
-                        im = self.Images[self.places[aux].HiddenVals[-1]]
-                        self.canvas.itemconfig(self.places[aux].HiddenIdList[-1], image=im, tag="movable")
-                        auxCard = None
-                        for i in self.hiddenCards:
-                            if (i.value == self.places[aux].HiddenCards[-1].value and
-                                    i.color == self.places[aux].HiddenCards[-1].color and
-                                    i.grid == self.places[aux].grid):
-                                auxCard = i
-                        self.cards.append(auxCard)
-                        self.places[aux].HiddenCards.pop()
-                        self.places[aux].HiddenIdList.pop()
-                        self.places[aux].HiddenVals.pop()
-                        self.places[aux].CoordY += 10
-                else:
-                    for i in range(13):
-                        self.places[aux].cards.pop()
-                        self.places[aux].idList.pop()
-                    self.places[aux].lastCard = self.places[aux].cards[-1]
+                self.delete_completed(self.places[aux])
 
             if len(self.move_data["startPlace"].cards) > lenOfMoved:
                 for i in self.move_data["cards"]:
@@ -286,22 +261,7 @@ class Board:
                 self.move_data["startPlace"].idList.clear()
                 self.move_data["startPlace"].CoordY = 60
                 if len(self.move_data["startPlace"].HiddenCards) > 0:
-                    self.move_data["startPlace"].lastCard = self.move_data["startPlace"].HiddenCards[-1]
-                    self.move_data["startPlace"].cards.append(self.move_data["startPlace"].HiddenCards[-1])
-                    self.move_data["startPlace"].idList.append(self.move_data["startPlace"].HiddenIdList[-1])
-                    im = self.Images[self.move_data["startPlace"].HiddenVals[-1]]
-                    self.canvas.itemconfig(self.move_data["startPlace"].HiddenIdList[-1], image=im, tag="movable")
-                    auxCard = None
-                    for i in self.hiddenCards:
-                        if (i.value == self.move_data["startPlace"].HiddenCards[-1].value and
-                                i.color == self.move_data["startPlace"].HiddenCards[-1].color and
-                                i.grid == self.move_data["startPlace"].grid):
-                            auxCard = i
-                    self.cards.append(auxCard)
-                    self.move_data["startPlace"].HiddenCards.pop()
-                    self.move_data["startPlace"].HiddenIdList.pop()
-                    self.move_data["startPlace"].HiddenVals.pop()
-                    self.move_data["startPlace"].CoordY += 10
+                    self.show_hidden_cards(self.move_data["startPlace"])
         else:
             x = self.move_data["startX"] - cardCoords[0]
             y = self.move_data["startY"] - cardCoords[1]
@@ -344,6 +304,11 @@ class Board:
             self.move_data["startX"] = 0
             self.move_data["startY"] = 0
             self.move_data["Value"] = 0
+            for i in self.places:
+                print("------")
+                for j in i.idList:
+                    print(j)
+            print("-----next_move------")
 
             #lista = self.canvas.find_withtag("movable")
             #for i in range(21):
@@ -383,5 +348,46 @@ class Board:
             dx = event.x - cardCoords[0]
             dy = event.y - cardCoords[1]
             self.canvas.move(i, dx, dy + ((self.move_list.index(i))*30))
+    def delete_completed(self, place):
+        if len(place.cards) == 13:
+            for i in place.idList:
+                self.canvas.delete(i)
+                for j in self.cards:
+                    if j.id == i:
+                        self.cards.remove(j)
+            place.CoordY -= 30 * (len(place.cards))
+            place.cards.clear()
+            place.idList.clear()
+            place.lastCard = None
+            if len(place.HiddenCards) > 0:
+                self.show_hidden_cards(place)
+        else:
+            for i in range(13):
+                place.cards.pop()
+                x = place.idList.pop()
+                self.canvas.delete(x)
+                for j in self.cards:
+                    if j.id == x:
+                        self.cards.remove(x)
+                        break
+            place.lastCard = place.cards[-1]
+    def show_hidden_cards(self,place):
+        place.lastCard = place.HiddenCards[-1]
+        place.cards.append(place.HiddenCards[-1])
+        place.idList.append(place.HiddenIdList[-1])
+        im = self.Images[place.HiddenVals[-1]]
+        self.canvas.itemconfig(place.HiddenIdList[-1], image=im, tag="movable")
+        auxCard = None
+        for i in self.hiddenCards:
+            if (i.value == place.HiddenCards[-1].value and
+                    i.color == place.HiddenCards[-1].color and
+                    i.grid == place.grid):
+                auxCard = i
+                print(i.value)
+        self.cards.append(auxCard)
+        place.HiddenCards.pop()
+        place.HiddenIdList.pop()
+        place.HiddenVals.pop()
+        place.CoordY += 10
 
 board = Board()
