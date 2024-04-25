@@ -91,7 +91,7 @@ class Board:
             for i in self.places:
                 value = self.deck.cards[val].value + 1
                 color = self.deck.cards[val].color
-                j = len(i.idList) - 1
+                j = len(i.cards) - 1
                 move = list()
                 while j >= 0 and value == i.cards[j].value and color == i.cards[j].color:
                     move.append(i.idList[j])
@@ -115,7 +115,7 @@ class Board:
             if len(self.stack.cards) == 0:
                 self.canvas.delete(self.stack.id)
             print("zostalo: "+str(len(self.stack.cards))+" kart")
-            for i in self.places():
+            for i in self.places:
                 if self.check_if_completed(i):
                     self.delete_completed(i)
         elif len(self.stack.cards) == 0:
@@ -201,6 +201,8 @@ class Board:
         # checking on which place the card is dropped
         aux = (int(cardCoords[0]) - 150)
         aux = int(aux / 150)
+        if len(self.places[aux].cards) != len(self.places[aux].idList):
+            print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!rozna dlugosc")
         if cardCoords[0] >= 150 and (self.places[aux].lastCard == None or
                     ((self.places[aux].lastCard.value - 1) == self.move_data["cards"][0].value)):
             self.places[aux].CoordY = 60 + (30 * (len(self.places[aux].cards))) + (10 * len(self.places[aux].HiddenCards))
@@ -218,7 +220,7 @@ class Board:
                     self.canvas.dtag(i, "movable")
 
             if self.places[aux].cards[-1] != None:
-                i = len(self.places[aux].idList) - 1
+                i = len(self.places[aux].cards) - 1
                 val = self.places[aux].cards[-1].value
                 col = self.places[aux].cards[-1].color
                 mov = list()
@@ -242,18 +244,7 @@ class Board:
                     self.move_data["startPlace"].cards.pop()
                     self.move_data["startPlace"].idList.remove(i.id)
                 self.move_data["startPlace"].lastCard = self.move_data["startPlace"].cards[-1]
-                listOfMovable = list()
-                i = len(self.move_data["startPlace"].cards) - 1
-                val = self.move_data["startPlace"].lastCard.value
-                while i >= 0 and self.move_data["startPlace"].cards[i].value == val \
-                    and self.move_data["startPlace"].cards[i].color == self.move_data["startPlace"].lastCard.color:
-                        listOfMovable.append(self.move_data["startPlace"].idList[i])
-                        i -= 1
-                        val += 1
-                for i in self.move_data["startPlace"].idList:
-                        self.canvas.dtag(i, "movable")
-                for i in listOfMovable:
-                    self.canvas.addtag_withtag("movable", i)
+                self.add_movable_cards(self.move_data["startPlace"])
 
             else:
                 self.move_data["startPlace"].lastCard = None
@@ -278,7 +269,6 @@ class Board:
             val += 1
             leng -= 1
         if val == 14:
-            print("complete")
             return True
         return False
 
@@ -306,8 +296,9 @@ class Board:
             self.move_data["Value"] = 0
             for i in self.places:
                 print("------")
-                for j in i.idList:
-                    print(j)
+                print("len: "+str(len(i.idList)))
+                for j in i.cards:
+                    print(j.value)
             print("-----next_move------")
 
             #lista = self.canvas.find_withtag("movable")
@@ -359,6 +350,7 @@ class Board:
             place.cards.clear()
             place.idList.clear()
             place.lastCard = None
+            print("hidden________________________________________hidden: "+str(len(place.HiddenCards)))
             if len(place.HiddenCards) > 0:
                 self.show_hidden_cards(place)
         else:
@@ -368,9 +360,23 @@ class Board:
                 self.canvas.delete(x)
                 for j in self.cards:
                     if j.id == x:
-                        self.cards.remove(x)
-                        break
+                        self.cards.remove(j)
             place.lastCard = place.cards[-1]
+            self.add_movable_cards(place)
+
+    def add_movable_cards(self, place):
+        listOfMovable = list()
+        i = len(place.cards) - 1
+        val = place.lastCard.value
+        while i >= 0 and place.cards[i].value == val \
+                and place.cards[i].color == place.lastCard.color:
+            listOfMovable.append(place.idList[i])
+            i -= 1
+            val += 1
+        for i in place.idList:
+            self.canvas.dtag(i, "movable")
+        for i in listOfMovable:
+            self.canvas.addtag_withtag("movable", i)
     def show_hidden_cards(self,place):
         place.lastCard = place.HiddenCards[-1]
         place.cards.append(place.HiddenCards[-1])
@@ -378,6 +384,7 @@ class Board:
         im = self.Images[place.HiddenVals[-1]]
         self.canvas.itemconfig(place.HiddenIdList[-1], image=im, tag="movable")
         auxCard = None
+        #chyba gdzies tu sie krzaczy
         for i in self.hiddenCards:
             if (i.value == place.HiddenCards[-1].value and
                     i.color == place.HiddenCards[-1].color and
