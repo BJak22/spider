@@ -18,7 +18,7 @@ class Board:
         self.canvas.pack()
 
         # create deck and list of images of cards
-        self.deck = Deck(1)
+        self.deck = Deck(2)
         self.Images = []
         for i in self.deck.cards:
             Aux = str(i.value) + i.color + ".png"
@@ -47,7 +47,7 @@ class Board:
                 val += 1
         # data of object that is moving
         self.move_data = {"object": None, "x": 0, "y": 0, "startX": 0, "startY": 0, "cards": [],
-                          "startPlace": None, "card": None}
+                          "startPlace": None, "card": Card("T",-1)}
         self.add_cards("movable")
         self.move_bind("movable")
         self.add_cards_bind("addCards")
@@ -136,11 +136,19 @@ class Board:
         aux = (int(cardCoords[0]) - 150)
         aux = int(aux / 150)
         cardId = self.move_data["object"][-1]
+        print(self.move_data["object"][-1])
+        for i in self.places:
+            if cardId in i.idList:
+                print("obiekt jest karta")
         self.move_data["startPlace"] = self.places[aux]
         self.move_list = list()
+        #print(self.move_data["object"][-1])
         for i in self.cards:
             if cardId == i.id:
+                #print("here")
                 self.move_data["card"] = i
+        print("self.move_data[card]: " + str(self.move_data["card"].value))
+        print("self.places[aux].lastCard: " + str(self.places[aux].lastCard.value))
         idList = list()
         if self.check_if_card_is_last():
             self.move_list.append(self.move_data["object"])
@@ -201,8 +209,6 @@ class Board:
         # checking on which place the card is dropped
         aux = (int(cardCoords[0]) - 150)
         aux = int(aux / 150)
-        if len(self.places[aux].cards) != len(self.places[aux].idList):
-            print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!rozna dlugosc")
         if cardCoords[0] >= 150 and (self.places[aux].lastCard == None or
                     ((self.places[aux].lastCard.value - 1) == self.move_data["cards"][0].value)):
             self.places[aux].CoordY = 60 + (30 * (len(self.places[aux].cards))) + (10 * len(self.places[aux].HiddenCards))
@@ -294,12 +300,14 @@ class Board:
             self.move_data["startX"] = 0
             self.move_data["startY"] = 0
             self.move_data["Value"] = 0
-            for i in self.places:
-                print("------")
-                print("len: "+str(len(i.idList)))
-                for j in i.cards:
-                    print(j.value)
-            print("-----next_move------")
+            print("liczba kart: ")
+            print(len(self.cards))
+            #for i in self.places:
+                #print("------")
+                #print("len: "+str(len(i.idList)))
+                #for j in i.cards:
+                    #print(j.value)
+            #print("-----next_move------")
 
             #lista = self.canvas.find_withtag("movable")
             #for i in range(21):
@@ -341,18 +349,25 @@ class Board:
             self.canvas.move(i, dx, dy + ((self.move_list.index(i))*30))
     def delete_completed(self, place):
         if len(place.cards) == 13:
+            newSelfCards = list()
+            for i in self.cards:
+                if i.id not in place.idList:
+                    newSelfCards.append(i)
             for i in place.idList:
                 self.canvas.delete(i)
-                for j in self.cards:
-                    if j.id == i:
-                        self.cards.remove(j)
+            self.cards = newSelfCards
+            #for i in self.cards:
+                #print("val: " +str(i.value) +", col: " +str(i.color) + ", id: " + str(i.id))
             place.CoordY -= 30 * (len(place.cards))
             place.cards.clear()
             place.idList.clear()
             place.lastCard = None
-            print("hidden________________________________________hidden: "+str(len(place.HiddenCards)))
+            #print("hidden________________________________________hidden: "+str(len(place.HiddenCards)))
             if len(place.HiddenCards) > 0:
                 self.show_hidden_cards(place)
+            if place.lastCard != None:
+                print("nowy test:")
+                print(place.lastCard.value)
         else:
             for i in range(13):
                 place.cards.pop()
@@ -384,14 +399,14 @@ class Board:
         im = self.Images[place.HiddenVals[-1]]
         self.canvas.itemconfig(place.HiddenIdList[-1], image=im, tag="movable")
         auxCard = None
-        #chyba gdzies tu sie krzaczy
         for i in self.hiddenCards:
             if (i.value == place.HiddenCards[-1].value and
                     i.color == place.HiddenCards[-1].color and
                     i.grid == place.grid):
                 auxCard = i
-                print(i.value)
+
         self.cards.append(auxCard)
+        #print("auxCard: "+str(auxCard.value))
         place.HiddenCards.pop()
         place.HiddenIdList.pop()
         place.HiddenVals.pop()
