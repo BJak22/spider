@@ -7,3 +7,4 @@ class State:
         self.places = list()
         for i in places:
             self.places.append(copy.deepcopy(i))
+        self.stack = copy.deepcopy(stack)

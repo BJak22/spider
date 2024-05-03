@@ -23,9 +23,13 @@ class Board:
         # create deck and list of images of cards
         self.deck = Deck(1)
         self.Images = []
-        for i in self.deck.cards:
-            Aux = str(i.value) + i.color + ".png"
-            self.Images.append(tk.PhotoImage(file=Aux))
+        self.colors = ["H", "D", "C", "S"]
+        for i in self.colors:
+            val = 1
+            while val < 14:
+                Aux = str(val) + i + ".png"
+                self.Images.append(tk.PhotoImage(file=Aux))
+                val += 1
         self.Images.append(tk.PhotoImage(file="Back.png"))
 
         self.stack = Stack(self.deck, self.canvas, self.Images[-1])
@@ -57,6 +61,10 @@ class Board:
         self.add_cards_bind("addCards")
         self.window.mainloop()
 
+    def find_image(self, card):
+        ind = self.colors.index(card.color)
+        ind = 13*ind + card.value - 1
+        return ind
     def add_cards(self, tag):
         val = 0
         for i in self.places:
@@ -65,8 +73,9 @@ class Board:
                                                   i.CoordX+50, i.CoordY + 70, i.grid))
                 i.CoordY += 10
         for i in self.places:
+            im_number = self.find_image(i.lastCard)
             self.cards.append(LabelCard(self.window, i.lastCard.color, i.lastCard.value,
-                                        tag, self.canvas, self.Images[val], i.CoordX + 50, i.CoordY + 70, i.grid))
+                                        tag, self.canvas, self.Images[im_number], i.CoordX + 50, i.CoordY + 70, i.grid))
             val += 1
         for i in self.places:
             for j in self.cards:
@@ -107,11 +116,13 @@ class Board:
                     if j.grid == i.grid and j.id not in move:
                         self.canvas.dtag(j.id, "movable")
                 i.CoordY = 70 + (30 * (len(i.cards) - 1)) + (10 * len(i.HiddenCards))
-                self.cards.append(LabelCard(self.window, self.deck.cards[val].color, self.deck.cards[val].value,
-                                           "movable", self.canvas, self.Images[val], i.CoordX + 50, i.CoordY + 90, i.grid))
                 tmpCard = Card(self.deck.cards[val].color, self.deck.cards[val].value)
                 i.cards.append(tmpCard)
                 i.lastCard = tmpCard
+                im_number = self.find_image(tmpCard)
+                self.cards.append(LabelCard(self.window, self.deck.cards[val].color, self.deck.cards[val].value,
+                                            "movable", self.canvas, self.Images[im_number], i.CoordX + 50, i.CoordY + 90,
+                                            i.grid))
                 val += 1
             for i in self.places:
                 for j in self.cards:
@@ -124,6 +135,7 @@ class Board:
             for i in self.places:
                 if self.check_if_completed(i):
                     self.delete_completed(i)
+            self.stateList.append(State(self.places, self.cards, self.hiddenCards, self.stack))
         elif len(self.stack.cards) == 0:
             print("brak kart")
         else:
@@ -265,6 +277,8 @@ class Board:
                 self.move_data["startPlace"].CoordY = 60
                 if len(self.move_data["startPlace"].HiddenCards) > 0:
                     self.show_hidden_cards(self.move_data["startPlace"])
+            if self.move_data["startPlace"] != self.places[aux]:
+                self.stateList.append(State(self.places, self.cards, self.hiddenCards, self.stack))
         else:
             x = self.move_data["startX"] - cardCoords[0]
             y = self.move_data["startY"] - cardCoords[1]
@@ -287,11 +301,11 @@ class Board:
     def move_stop(self, event):
         if self.move_data["object"] != None:
             self.drop()
-            for i in self.places:
-                print("----------")
-                print("grid: " + str(i.grid))
-                for j in i.cards:
-                    print(j.value)
+            #for i in self.places:
+                #print("----------")
+                #print("grid: " + str(i.grid))
+                #for j in i.cards:
+                    #print(j.value)
             #for i in self.places:
                 #print("----------")
                 #if(i.lastCard != None):
@@ -402,8 +416,8 @@ class Board:
         place.lastCard = place.HiddenCards[-1]
         place.cards.append(place.HiddenCards[-1])
         place.idList.append(place.HiddenIdList[-1])
-        im = self.Images[place.HiddenVals[-1]]
-        self.canvas.itemconfig(place.HiddenIdList[-1], image=im, tag="movable")
+        im = self.find_image(place.lastCard)
+        self.canvas.itemconfig(place.HiddenIdList[-1], image=self.Images[im], tag="movable")
         auxCard = None
         for i in self.hiddenCards:
             if (i.value == place.HiddenCards[-1].value and
@@ -419,38 +433,46 @@ class Board:
         place.CoordY += 10
 
     def restoreState(self, event):
+        if len(self.stateList) > 1:
+            self.stateList.pop()
         if len(self.stateList) >= 1:
             x = self.stateList[-1]
-            if len(self.stateList) > 1:
-                self.stateList.pop()
             for i in self.places:
                 for j in x.places:
                     if i.grid == j.grid and len(i.HiddenCards) != len(j.HiddenCards):
                         i.lastCard = None
-                        i.cards.pop()
+                        card = i.cards.pop()
                         id = i.idList.pop()
                         im = self.Images[-1]
                         self.canvas.itemconfig(id, image=im)
                         self.canvas.dtag(id, "movable")
+                        i.HiddenCards.append(card)
+                        i.HiddenIdList.append(id)
                         for k in self.cards:
                             if k.id == id:
                                 self.cards.remove(k)
                                 self.hiddenCards.append(k)
                     if i.grid == j.grid and len(i.cards) != len(j.cards):
+                        i.cards.clear()
                         for k in i.idList:
                             self.canvas.delete(k)
+                        newCards = list()
                         for k in self.cards:
-                            if k.id in i.idList:
-                                self.cards.remove(k)
+                            if k.id not in i.idList:
+                                newCards.append(k)
+                        self.cards = newCards
+                        #print("zmieniono: ")
                         for k in j.cards:
-                            #
-                            #
-                            #znajdz odpowiedni obrazek
-                            #
+                            #print(k.value)
+                            im = self.find_image(k)
+                            i.CoordY = 60 + (30 * (len(i.cards))) + (
+                                        10 * len(i.HiddenCards))
+                            #print(i.grid)
+                            #print(i.CoordY)
                             self.cards.append(LabelCard(self.window, k.color, k.value,
-                                                        "movable", self.canvas, self.Images[0],  j.CoordX + 50,
-                                                        j.CoordY + 70, j.grid))
-                            print("powinno stworzyc")
+                                                        "movable", self.canvas, self.Images[im],  i.CoordX + 50,
+                                                        i.CoordY + 70, i.grid))
+                            i.cards.append(k)
                         i.idList.clear()
                         i.HiddenIdList.clear()
                         for k in self.cards:
@@ -459,8 +481,18 @@ class Board:
                         for k in self.hiddenCards:
                             if k.grid == i.grid:
                                 i.HiddenIdList.append(k.id)
-                        i.cards = copy.deepcopy(j.cards)
                         i.lastCard = i.cards[-1]
+                    for k in self.places:
+                        self.add_movable_cards(k)
+            if len(x.stack.cards) > len(self.stack.cards):
+                self.stack.cards = x.stack.cards
+            print("----ctrl+z-----")
+            for i in self.places:
+                print("grid: " +str(i.grid))
+                for j in i.idList:
+                    print(j)
+                #print(len(i.idList))
+                print("------------")
 
 
 board = Board()
