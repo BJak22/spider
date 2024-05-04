@@ -12,4 +12,3 @@ class Queue:
         self.idList = list()
         self.HiddenCards = list()
         self.HiddenIdList = list()
-        self.HiddenVals = list()
