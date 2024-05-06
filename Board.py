@@ -501,7 +501,10 @@ class Board:
                             if k.grid == i.grid:
                                 i.idList.append(k.id)
                         for k in self.places:
-                            k.lastCard = k.cards[-1]
+                            if len(k.cards) > 0:
+                                k.lastCard = k.cards[-1]
+                            else:
+                                k.lastCard = None
                     for k in self.places:
                         self.add_movable_cards(k)
             if len(x.stack.cards) > len(self.stack.cards):
