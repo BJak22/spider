@@ -21,7 +21,7 @@ class Board:
         self.canvas.pack()
 
         # create deck and list of images of cards
-        self.deck = Deck(2)
+        self.deck = Deck(1)
         self.Images = []
         self.colors = ["H", "D", "C", "S"]
         for i in self.colors:
@@ -431,7 +431,8 @@ class Board:
         place.idList.append(place.HiddenIdList[-1])
         im = self.find_image(place.lastCard)
         self.canvas.itemconfig(place.HiddenIdList[-1], image=self.Images[im], tag="movable")
-        auxCard = Card("T", -1)
+        #temporary Card
+        auxCard = LabelCard(None, "T", 0, None, self.canvas, self.Images[-1], 50, 70, -1)
         for i in self.hiddenCards:
             if (i.value == place.HiddenCards[-1].value and
                     i.color == place.HiddenCards[-1].color and
