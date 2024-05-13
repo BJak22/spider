@@ -10,5 +10,7 @@ class Card:
 class LabelCard(Card):
     def __init__(self, window, color, value, tag, canvas, image,coordX, coordY, grid):
         Card.__init__(self, color, value)
-        self.id = canvas.create_image(coordX, coordY, image=image, tags=tag)
+        self.id = canvas.create_image(coordX, coordY, image=image)
+        if tag != None:
+            canvas.itemconfig(self.id, tag=tag)
         self.grid = grid
