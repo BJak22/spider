@@ -1,13 +1,12 @@
 import random
 from Card import Card
 
-CardColors = ['S', 'H', 'D', 'C']
-BlackColors = ['S', 'C']
-RedColors = ['H', 'D']
-
 
 class Deck:
     def __init__(self, level):
+        CardColors = ['S', 'H', 'D', 'C']
+        BlackColors = ['S', 'C']
+        RedColors = ['H', 'D']
         self.level = level
         self.colors = list()
         self.cards = list()
@@ -54,6 +53,7 @@ class Deck:
         random.shuffle(self.cards)
 
         self.cardsLeft = len(self.cards)
+        print(self.cardsLeft)
 
 
 #test = Deck(1)

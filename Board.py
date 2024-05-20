@@ -9,10 +9,12 @@ from state import State
 
 
 class Board:
-    def __init__(self):
-        self.window = tk.Tk()
+    def __init__(self, window, level):
+        self.window = window
         self.window.bind("<Control-z>", self.restoreState)
+        self.points = 500
 
+        self.firstClick = True
 
         self.window.geometry("1700x800")
         self.window.resizable(False, False)
@@ -20,8 +22,10 @@ class Board:
         self.canvas = tk.Canvas(width=1700, height=800, bg="#3ea84a")
         self.canvas.pack()
 
+        self.pointsLabel = self.canvas.create_text(30, 30, text=self.points, font = "TimesNewRoman")
+
         # create deck and list of images of cards
-        self.deck = Deck(2)
+        self.deck = Deck(level)
         self.Images = []
         self.colors = ["H", "D", "C", "S"]
         for i in self.colors:
@@ -37,6 +41,7 @@ class Board:
         self.hiddenCards = list()
         self.places = list()
         self.stateList = list()
+        print(len(self.deck.cards))
 
         self.grids = [200, 350, 500, 650, 800, 950, 1100, 1250, 1400, 1550]
 
@@ -60,7 +65,6 @@ class Board:
         self.add_cards("movable")
         self.move_bind("movable")
         self.add_cards_bind("addCards")
-        self.window.mainloop()
 
     def find_image(self, card):
         ind = self.colors.index(card.color)
@@ -85,7 +89,7 @@ class Board:
             for j in self.hiddenCards:
                 if j.grid == i.grid:
                     i.HiddenIdList.append(j.id)
-        self.stateList.append(State(self.places, self.cards, self.hiddenCards, self.stack))
+        self.stateList.append(State(self.places, self.cards, self.hiddenCards, self.stack, self.points))
 
 
     def move_bind(self, tag):
@@ -103,6 +107,7 @@ class Board:
         return True
     def add_more_cards(self, event):
         if len(self.stack.cards) > 0 and self.check_if_places_not_empty():
+            self.points -= 1
             val = len(self.deck.cards) - len(self.stack.cards)
             for i in self.places:
                 value = self.deck.cards[val].value + 1
@@ -136,7 +141,8 @@ class Board:
             for i in self.places:
                if self.check_if_completed(i):
                     self.delete_completed(i)
-            self.stateList.append(State(self.places, self.cards, self.hiddenCards, self.stack))
+            self.stateList.append(State(self.places, self.cards, self.hiddenCards, self.stack, self.points))
+            self.canvas.itemconfig(self.pointsLabel, text=self.points)
         elif len(self.stack.cards) == 0:
             print("brak kart")
         else:
@@ -145,6 +151,10 @@ class Board:
             self.change_interspace(i)
 
     def move_start(self, event):
+        self.points -= 1
+        if self.firstClick:
+            print("pierwszy ruch")
+            self.firstClick = False
         ListcardsIds= list()
         for i in self.places:
             ListcardsIds.extend(i.idList)
@@ -282,7 +292,7 @@ class Board:
                 if len(self.move_data["startPlace"].HiddenCards) > 0:
                     self.show_hidden_cards(self.move_data["startPlace"])
             if self.move_data["startPlace"] != self.places[aux]:
-                self.stateList.append(State(self.places, self.cards, self.hiddenCards, self.stack))
+                self.stateList.append(State(self.places, self.cards, self.hiddenCards, self.stack, self.points))
         else:
             x = self.move_data["startX"] - cardCoords[0]
             y = self.move_data["startY"] - cardCoords[1]
@@ -327,6 +337,7 @@ class Board:
             self.move_data["startPlace"] = Queue(1, self.empty, None, 11,0)
             for i in self.places:
                 self.change_interspace(i)
+            self.canvas.itemconfig(self.pointsLabel, text=self.points)
             #for i in self.places:
                 #print("grid: " + str(i.grid))
                 #print("len(i.HiddenCards): " + str(len(i.HiddenCards)))
@@ -381,6 +392,7 @@ class Board:
             dy = event.y - cardCoords[1]
             self.canvas.move(i, dx, dy + ((self.move_list.index(i))*30))
     def delete_completed(self, place):
+        self.points += 101
         if len(place.cards) == 13:
             newSelfCards = list()
             for i in self.cards:
@@ -451,6 +463,10 @@ class Board:
             self.stateList.pop()
         if len(self.stateList) >= 1:
             x = self.stateList[-1]
+            if x.points + 90 < self.points:
+                self.points -= 100
+            self.points -= 1
+            self.canvas.itemconfig(self.pointsLabel, text=self.points)
             for i in self.places:
                 for j in x.places:
                     if i.grid == j.grid and len(i.HiddenCards) != len(j.HiddenCards):
@@ -539,5 +555,4 @@ class Board:
             y = mover
             self.canvas.move(i, x, y)
 
-board = Board()
 
