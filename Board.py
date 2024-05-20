@@ -21,7 +21,7 @@ class Board:
         self.canvas.pack()
 
         # create deck and list of images of cards
-        self.deck = Deck(1)
+        self.deck = Deck(2)
         self.Images = []
         self.colors = ["H", "D", "C", "S"]
         for i in self.colors:
@@ -55,7 +55,8 @@ class Board:
         # data of object that is moving
         self.empty = tk.Canvas()
         self.move_data = {"object": 0, "x": 0, "y": 0, "startX": 0, "startY": 0, "cards": [],
-                          "startPlace": Queue(1, self.empty, None, 11,0), "card": Card("T", -1)}
+                          "startPlace": Queue(1, self.empty, None, 11,0),
+                          "card": LabelCard(None, "T", 0, None, None, self.Images[-1], 50, 70, -1)}
         self.add_cards("movable")
         self.move_bind("movable")
         self.add_cards_bind("addCards")
@@ -133,7 +134,7 @@ class Board:
                 #self.canvas.delete(self.stack.id)
             print("zostalo: "+str(len(self.stack.cards))+" kart")
             for i in self.places:
-                if self.check_if_completed(i):
+               if self.check_if_completed(i):
                     self.delete_completed(i)
             self.stateList.append(State(self.places, self.cards, self.hiddenCards, self.stack))
         elif len(self.stack.cards) == 0:
@@ -172,9 +173,9 @@ class Board:
         idList = list()
         if self.check_if_card_is_last():
             self.move_list.append(self.move_data["object"])
-            while len(self.canvas.find_above(self.move_data["card"].id)) != 0:
+            while len(self.canvas.find_above(self.move_data["object"])) != 0:
                 self.canvas.tag_raise(self.move_data["object"])
-            idList.append(self.move_data["object"][0])
+            idList.append(self.move_data["object"])
         else:
             idList.extend(self.canvas.find_overlapping(event.x, event.y, event.x, 700))
             removeList = list()
@@ -315,7 +316,7 @@ class Board:
                     #print("grid: " + str(i.grid)+ " last:" + str(i.lastCard.value))
             # for j in i.cards:
             # print(j.value)
-            self.move_data["card"] = Card("T", -1)
+            self.move_data["card"] = LabelCard(None, "T", 0, None, None, self.Images[-1], 50, 70, -1)
             self.move_data["cards"].clear()
             self.move_data["object"] = 0
             self.move_data["x"] = 0
@@ -432,7 +433,7 @@ class Board:
         im = self.find_image(place.lastCard)
         self.canvas.itemconfig(place.HiddenIdList[-1], image=self.Images[im], tag="movable")
         #temporary Card
-        auxCard = LabelCard(None, "T", 0, None, self.canvas, self.Images[-1], 50, 70, -1)
+        auxCard = LabelCard(None, "T", 0, None, None, self.Images[-1], 50, 70, -1)
         for i in self.hiddenCards:
             if (i.value == place.HiddenCards[-1].value and
                     i.color == place.HiddenCards[-1].color and
@@ -466,7 +467,7 @@ class Board:
                         # print("zmieniono: ")
                         for k in j.HiddenCards:
                             # print("wartosci kart ktorych obrazy zmieniam")
-                            # print(k.value)
+                            # print(k.value)8
                             # print(k.value)
                             i.CoordY = 60 + (10 * len(i.HiddenCards))
                             # print(i.grid)
