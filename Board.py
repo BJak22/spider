@@ -63,7 +63,7 @@ class Board:
         self.hiddenCards = list()
         self.places = list()
         self.stateList = list()
-        print(len(self.deck.cards))
+        #print(len(self.deck.cards))
 
         self.grids = [200, 350, 500, 650, 800, 950, 1100, 1250, 1400, 1550]
 
@@ -175,7 +175,7 @@ class Board:
     def move_start(self, event):
         self.points -= 1
         if self.firstClick:
-            print("pierwszy ruch")
+            #print("pierwszy ruch")
             self.firstClick = False
             self.startTime = time.time()
             self.thread = threading.Thread(target=self.timer, daemon=True)
