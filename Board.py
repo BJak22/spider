@@ -351,22 +351,23 @@ class Board:
                     #print("grid: " + str(i.grid)+ " last:" + str(i.lastCard.value))
             # for j in i.cards:
             # print(j.value)
-            self.move_data["card"] = LabelCard(None, "T", 0, None, None, self.Images[-1], 50, 70, -1)
-            self.move_data["cards"].clear()
-            self.move_data["object"] = 0
-            self.move_data["x"] = 0
-            self.move_data["y"] = 0
-            self.move_data["startX"] = 0
-            self.move_data["startY"] = 0
-            self.move_data["Value"] = 0
-            self.move_data["startPlace"] = Queue(1, self.empty, None, 11,0)
-            for i in self.places:
-                self.change_interspace(i)
+            if len(self.cards) > 0:
+                self.move_data["card"] = self.cards[0]
+                self.move_data["cards"].clear()
+                self.move_data["object"] = 0
+                self.move_data["x"] = 0
+                self.move_data["y"] = 0
+                self.move_data["startX"] = 0
+                self.move_data["startY"] = 0
+                self.move_data["Value"] = 0
+                self.move_data["startPlace"] = Queue(1, self.empty, None, 11,0)
+                for i in self.places:
+                    self.change_interspace(i)
             self.canvas.itemconfig(self.pointsLabel, text=self.points)
             if len(self.cards) == 0:
                 self.stop_threading()
                 tk.messagebox.showinfo(title="YOU'VE WON!", message="Congrats :)")
-                self.window.unbind("<Control-z>", self.restoreState)
+                self.window.unbind("<Control-z>")
                 if self.level == 1 and (self.points > self.beginner_score):
                     self.beginner_score = self.points
                     self.beginner_time = self.time
@@ -467,6 +468,11 @@ class Board:
                         self.cards.remove(j)
             place.lastCard = place.cards[-1]
             self.add_movable_cards(place)
+        print("len idList:")
+        print(len(place.idList))
+        print("len cards:")
+        print(len(place.cards))
+        print(place.lastCard)
 
     def add_movable_cards(self, place):
         listOfMovable = list()
@@ -489,7 +495,7 @@ class Board:
         im = self.find_image(place.lastCard)
         self.canvas.itemconfig(place.HiddenIdList[-1], image=self.Images[im], tag="movable")
         #temporary Card
-        auxCard = LabelCard(None, "T", 0, None, None, self.Images[-1], 50, 70, -1)
+        auxCard = self.hiddenCards[0]
         for i in self.hiddenCards:
             if (i.value == place.HiddenCards[-1].value and
                     i.color == place.HiddenCards[-1].color and
@@ -595,6 +601,7 @@ class Board:
         for i in place.idList:
             mover = place.idList.index(i) * (- old_interspace + place.interspace)
             cardCoords = self.canvas.coords(i)
+            print(cardCoords)
             x = place.CoordX - cardCoords[0] + 50
             y = mover
             self.canvas.move(i, x, y)
