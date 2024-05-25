@@ -1,6 +1,7 @@
 from Board import Board
 from Deck import Deck
 import tkinter as tk
+from tkinter import messagebox
 
 class MyMenu:
     def __init__(self, app):
@@ -10,7 +11,6 @@ class MyMenu:
         self.NewGameMenu = tk.Menu(self.menu, tearoff=0)
         self.LeaderboardMenu = tk.Menu(self.menu, tearoff=0)
         self.menu.add_cascade(label='New Game', menu=self.NewGameMenu)
-        self.menu.add_command(label='Restart', command=self.app.restart)
         self.menu.add_separator()
         self.menu.add_cascade(label='Leaderboard', menu=self.LeaderboardMenu)
         self.menubar.add_cascade(label='Game', menu=self.menu)
@@ -44,7 +44,10 @@ class App:
 
 # commands to crete new game on certain levels
     def beginner(self):
+        self.abandon_game()
+        self.board.save_score()
         self.board.canvas.destroy()
+        self.board.stop_threading()
         self.board = Board(self.window, 1)
         #self.space_label = Label(self.upper_frame, width=10)
         #self.space_label.grid(row=0, column=1)
@@ -58,7 +61,10 @@ class App:
         #self.board = Board(8, 64, 10, self.board_frame, self.timer, self.mine_counter)
 
     def intermediate(self):
+        self.abandon_game()
+        self.board.save_score()
         self.board.canvas.destroy()
+        self.board.stop_threading()
         self.board = Board(self.window, 2)
         #self.space_label.destroy()
         #self.space_label = Label(self.upper_frame, width=40)
@@ -73,8 +79,12 @@ class App:
         #self.board = Board(16, 256, 40, self.board_frame, self.timer, self.mine_counter)
 
     def expert(self):
+        self.abandon_game()
+        self.board.save_score()
         self.board.canvas.destroy()
+        self.board.stop_threading()
         self.board = Board(self.window, 4)
+        self.board.save_score()
         #self.space_label.destroy()
         #self.space_label = Label(self.upper_frame, width=100)
         #self.space_label.grid(row=0, column=1)
@@ -87,68 +97,86 @@ class App:
         #self.board.board.destroy()
         #self.board = Board(30, 480, 99, self.board_frame, self.timer, self.mine_counter)
 
-# restarting last game (as long as you won't click on bomb in first move)
-    def restart(self):
-        None
-        #self.mine_counter.restart(self.board.number_of_mines)
-        #self.board.stop_threads = True
-        #self.timer.stop_threads = True
-        #self.timer.label.destroy()
-        #self.timer = Timer(self.upper_frame)
-        #self.board.timer = self.timer
-        #self.board.unshow()
-
     def reset_leaderboard(self):
-        None
-        #f = open("score.txt", mode='w')
-        #f.write('-1\n')
-        #f.write('0\n')
-        #f.write('0\n')
-        #f.write('-1\n')
-        #f.write('0\n')
-        #f.write('0\n')
-        #f.write('-1\n')
-        #f.write('0\n')
-        #f.write('0\n')
-        #f.close()
-        #self.board.beginner_score = self.board.intermediate_score =\
-            #self.board.expert_score = -1
-        #self.board.beginner_wins = self.board.intermediate_wins=\
-            #self.board.expert_wins = 0
-        #self.board.beginner_loses = self.board.intermediate_loses =\
-            #self.board.expert_loses = 0
+        f = open("score.txt", mode='w')
+        f.write('-1\n')
+        f.write('-1\n')
+        f.write('0\n')
+        f.write('0\n')
+        f.write('-1\n')
+        f.write('-1\n')
+        f.write('0\n')
+        f.write('0\n')
+        f.write('-1\n')
+        f.write('-1\n')
+        f.write('0\n')
+        f.write('0\n')
+        f.close()
+        self.board.beginner_score = self.board.intermediate_score =\
+            self.board.expert_score = -1
+        self.board.beginner_wins = self.board.intermediate_wins=\
+            self.board.expert_wins = 0
+        self.board.beginner_loses = self.board.intermediate_loses =\
+            self.board.expert_loses = 0
+        self.board.save_score()
 
     def show_leaderboard(self):
-        None
-        # check if there is any set score
-        #if self.board.beginner_score >= 0:
-            #beginner_score = self.board.beginner_score
-            #beginner_percent = int(self.board.beginner_wins /\
-            #(self.board.beginner_wins + self.board.beginner_loses) * 100)
-        #else:
-            #beginner_score = "no set times"
-            #beginner_percent = 0
-        #if self.board.intermediate_score >= 0:
-            #intermediate_score = self.board.intermediate_score
-            #intermediate_percent = int(self.board.intermediate_wins /\
-            #(self.board.intermediate_wins + self.board.intermediate_loses) * 100)
-        #else:
-            #intermediate_score = "no set times"
-            #intermediate_percent = 0
-        #if self.board.expert_score >= 0:
-            #expert_score = self.board.expert_score
-            #expert_percent = int(self.board.expert_wins /\
-            #(self.board.expert_wins + self.board.expert_loses) * 100)
-        #else:
-            #expert_score = "no set times"
-            #expert_percent = 0
-        #text = "Beginner:\nBest time: " + str(beginner_score) +\
-            #"\n" + str(beginner_percent) + "% of wins\n"+\
-            #"\nIntermediate:\nBest time: " + str(intermediate_score) + \
-            #"\n" + str(intermediate_percent) + "% of wins\n" + \
-            #"\nExpert:\nBest time: " + str(expert_score) + \
-            #"\n" + str(expert_percent) + "% of wins\n"
-        #messagebox.showinfo(title="LEADERBOARD", message=text)
+        #check if there is any set score
+        if self.board.beginner_score >= 0:
+            beginner_score = self.board.beginner_score
+            beginner_percent = int(self.board.beginner_wins /\
+            (self.board.beginner_wins + self.board.beginner_loses) * 100)
+            tm = self.board.beginner_time
+            min = int(tm / 60)
+            sec = tm - min * 60
+            beginner_time = str(min) + ':' + str(sec)
+        else:
+            beginner_score = "no set score"
+            beginner_time = "no set time"
+            beginner_percent = 0
+        if self.board.intermediate_score >= 0:
+            intermediate_score = self.board.intermediate_score
+            intermediate_percent = int(self.board.intermediate_wins /\
+            (self.board.intermediate_wins + self.board.intermediate_loses) * 100)
+            tm = self.board.intermediate_time
+            min = int(tm / 60)
+            sec = tm - min * 60
+            intermediate_time = str(min) + ':' + str(sec)
+        else:
+            intermediate_score = "no set score"
+            intermediate_time = "no set time"
+            intermediate_percent = 0
+        if self.board.expert_score >= 0:
+            expert_score = self.board.expert_score
+            expert_percent = int(self.board.expert_wins /\
+            (self.board.expert_wins + self.board.expert_loses) * 100)
+            tm = self.board.expert_time
+            min = int(tm / 60)
+            sec = tm - min * 60
+            expert_time = str(min) + ':' + str(sec)
+        else:
+            expert_score = "no set score"
+            expert_time = "no set time"
+            expert_percent = 0
+        text = "One Color:\nBest score: " + str(beginner_score) + \
+               "\nBest time: " + str(beginner_time) + \
+               "\n" + str(beginner_percent) + "% of wins\n"+\
+            "\nTwo Colors:\nBest score: " + str(intermediate_score) + \
+               "\nBest time: " + str(intermediate_time) + \
+               "\n" + str(intermediate_percent) + "% of wins\n" + \
+            "\nExpert:\nBest score: " + str(expert_score) + \
+               "\nBest time: " + str(expert_time) + \
+               "\n" + str(expert_percent) + "% of wins\n"
+        tk.messagebox.showinfo(title="LEADERBOARD", message=text)
+
+    def abandon_game(self):
+        if not self.board.won and not self.board.firstClick:
+            if self.board.level == 1:
+                self.board.beginner_loses += 1
+            if self.board.level == 2:
+                self.board.intermediate_loses += 1
+            if self.board.level == 4:
+                self.board.expert_loses += 1
 
 
 app = App()

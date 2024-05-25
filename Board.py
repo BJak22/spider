@@ -6,13 +6,32 @@ from Queue import Queue
 from Deck import Deck
 from Stack import Stack
 from state import State
-
+import time
+import threading
 
 class Board:
     def __init__(self, window, level):
+        self.stop_thread = False
         self.window = window
         self.window.bind("<Control-z>", self.restoreState)
         self.points = 500
+
+        # reading stats for leaderboard
+        f = open("score.txt", 'r')
+        self.won = False
+        self.beginner_score = int(f.readline())
+        self.beginner_time = int(f.readline())
+        self.beginner_wins = int(f.readline())
+        self.beginner_loses = int(f.readline())
+        self.intermediate_score = int(f.readline())
+        self.intermediate_time = int(f.readline())
+        self.intermediate_wins = int(f.readline())
+        self.intermediate_loses = int(f.readline())
+        self.expert_score = int(f.readline())
+        self.expert_time = int(f.readline())
+        self.expert_wins = int(f.readline())
+        self.expert_loses = int(f.readline())
+        f.close()
 
         self.firstClick = True
 
@@ -23,9 +42,12 @@ class Board:
         self.canvas.pack()
 
         self.pointsLabel = self.canvas.create_text(30, 30, text=self.points, font = "TimesNewRoman")
+        self.timeLabel = self.canvas.create_text(1660, 30, text="0:00", font="TimesNewRoman")
 
         # create deck and list of images of cards
         self.deck = Deck(level)
+        self.time = 0
+        self.level = level
         self.Images = []
         self.colors = ["H", "D", "C", "S"]
         for i in self.colors:
@@ -155,6 +177,9 @@ class Board:
         if self.firstClick:
             print("pierwszy ruch")
             self.firstClick = False
+            self.startTime = time.time()
+            self.thread = threading.Thread(target=self.timer, daemon=True)
+            self.thread.start()
         ListcardsIds= list()
         for i in self.places:
             ListcardsIds.extend(i.idList)
@@ -338,6 +363,25 @@ class Board:
             for i in self.places:
                 self.change_interspace(i)
             self.canvas.itemconfig(self.pointsLabel, text=self.points)
+            if len(self.cards) == 0:
+                self.stop_threading()
+                tk.messagebox.showinfo(title="YOU'VE WON!", message="Congrats :)")
+                self.window.unbind("<Control-z>", self.restoreState)
+                if self.level == 1 and (self.points > self.beginner_score):
+                    self.beginner_score = self.points
+                    self.beginner_time = self.time
+                    self.beginner_wins += 1
+                if self.level == 2 and (self.points > self.intermediate_score):
+                    self.intermediate_score = self.points
+                    self.intermediate_time = self.time
+                    self.intermediate_wins += 1
+                if self.level == 4 and (self.points > self.expert_score):
+                    self.expert_score = self.points
+                    self.expert_time = self.time
+                    self.expert_wins += 1
+                self.won = True
+                self.save_score()
+
             #for i in self.places:
                 #print("grid: " + str(i.grid))
                 #print("len(i.HiddenCards): " + str(len(i.HiddenCards)))
@@ -555,4 +599,35 @@ class Board:
             y = mover
             self.canvas.move(i, x, y)
 
+    def timer(self):
+        while True:
+            if self.stop_thread:
+               break
+            time.sleep(1)
+            if self.stop_thread:
+                break
+            tm = int(time.time()-self.startTime)
+            min = int(tm/60)
+            sec = tm - min*60
+            if sec<10:
+                sec = "0" + str(sec)
+            self.canvas.itemconfig(self.timeLabel, text=str(min) + ":"+str(sec))
+            self.time = tm
+    def stop_threading(self):
+        self.stop_thread = True
 
+    def save_score(self):
+        f = open("score.txt", mode='w')
+        f.write(str(self.beginner_score)+'\n')
+        f.write(str(self.beginner_time) + '\n')
+        f.write(str(self.beginner_wins)+'\n')
+        f.write(str(self.beginner_loses)+'\n')
+        f.write(str(self.intermediate_score)+'\n')
+        f.write(str(self.intermediate_time) + '\n')
+        f.write(str(self.intermediate_wins)+'\n')
+        f.write(str(self.intermediate_loses)+'\n')
+        f.write(str(self.expert_score)+'\n')
+        f.write(str(self.expert_time) + '\n')
+        f.write(str(self.expert_wins)+'\n')
+        f.write(str(self.expert_loses)+'\n')
+        f.close()
