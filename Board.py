@@ -601,10 +601,10 @@ class Board:
         for i in place.idList:
             mover = place.idList.index(i) * (- old_interspace + place.interspace)
             cardCoords = self.canvas.coords(i)
-            print(cardCoords)
-            x = place.CoordX - cardCoords[0] + 50
-            y = mover
-            self.canvas.move(i, x, y)
+            if len(cardCoords) > 0:
+                x = place.CoordX - cardCoords[0] + 50
+                y = mover
+                self.canvas.move(i, x, y)
 
     def timer(self):
         while True:
