@@ -384,6 +384,7 @@ class Board:
                 self.save_score()
 
             for i in self.places:
+                self.add_movable_cards(i)
                 print("grid: " + str(i.grid))
                 print("len(i.HiddenCards): " + str(len(i.HiddenCards)))
                 print("len(i.HiddenIdList): " + str(len(i.HiddenIdList)))
@@ -460,13 +461,17 @@ class Board:
                 #print("nowy test:")
                 #print(place.lastCard.value)
         else:
+            idList = list()
             for i in range(13):
                 place.cards.pop()
                 x = place.idList.pop()
                 self.canvas.delete(x)
-                for j in self.cards:
-                    if j.id == x:
-                        self.cards.remove(j)
+                idList.append(x)
+            newSelfCards = list()
+            for j in self.cards:
+                if j.id not in idList:
+                    newSelfCards.append(j)
+            self.cards = newSelfCards
             place.lastCard = place.cards[-1]
             self.add_movable_cards(place)
         #print("len idList:")
@@ -594,18 +599,25 @@ class Board:
                 #print("------------")
 
     def change_interspace(self, place):
-        change = 0
-        if len(place.cards) > 15:
-            change = 10 * (int(len(place.cards) / 15))
-        old_interspace = place.interspace
-        place.interspace = 30 - change
-        for i in place.idList:
-            mover = place.idList.index(i) * (- old_interspace + place.interspace)
-            cardCoords = self.canvas.coords(i)
-            if len(cardCoords) > 0:
-                x = place.CoordX - cardCoords[0] + 50
-                y = mover
-                self.canvas.move(i, x, y)
+        if len(place.cards) > 15 and place.interspace != 15:
+            place.interspace = 15
+            for i in place.idList:
+                mover = place.idList.index(i) * (-15)
+                cardCoords = self.canvas.coords(i)
+                if len(cardCoords) > 0:
+                    x = place.CoordX - cardCoords[0] + 50
+                    y = mover
+                    self.canvas.move(i, x, y)
+        if len(place.cards) < 15 and place.interspace == 15:
+            place.interspace = 30
+            for i in place.idList:
+                mover = place.idList.index(i) * (15)
+                cardCoords = self.canvas.coords(i)
+                if len(cardCoords) > 0:
+                    x = place.CoordX - cardCoords[0] + 50
+                    y = mover
+                    self.canvas.move(i, x, y)
+
 
     def timer(self):
         while True:

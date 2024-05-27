@@ -4,7 +4,9 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="9b1bc026-42a5-46ce-ab18-f99c73858a3c" name="Changes" comment="leaderboard v2">
+    <list default="true" id="9b1bc026-42a5-46ce-ab18-f99c73858a3c" name="Changes" comment="leaderboard">
+      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/spider.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/spider.iml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Board.py" beforeDir="false" afterPath="$PROJECT_DIR$/Board.py" afterDir="false" />
     </list>
@@ -67,7 +69,6 @@
   <component name="RunManager" selected="Python.app">
     <configuration name="Board" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="spider" />
-      <option name="ENV_FILES" value="" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
       <envs>
@@ -89,7 +90,6 @@
     </configuration>
     <configuration name="Deck" type="PythonConfigurationType" factoryName="Python" nameIsGenerated="true">
       <module name="spider" />
-      <option name="ENV_FILES" value="" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
       <envs>
@@ -111,7 +111,6 @@
     </configuration>
     <configuration name="Queue" type="PythonConfigurationType" factoryName="Python" nameIsGenerated="true">
       <module name="spider" />
-      <option name="ENV_FILES" value="" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
       <envs>
@@ -133,7 +132,6 @@
     </configuration>
     <configuration name="app" type="PythonConfigurationType" factoryName="Python" nameIsGenerated="true">
       <module name="spider" />
-      <option name="ENV_FILES" value="" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
       <envs>
@@ -292,15 +290,7 @@
       <option name="project" value="LOCAL" />
       <updated>1716636022477</updated>
     </task>
-    <task id="LOCAL-00016" summary="leaderboard v2">
-      <option name="closed" value="true" />
-      <created>1716637003894</created>
-      <option name="number" value="00016" />
-      <option name="presentableId" value="LOCAL-00016" />
-      <option name="project" value="LOCAL" />
-      <updated>1716637003894</updated>
-    </task>
-    <option name="localTasksCounter" value="17" />
+    <option name="localTasksCounter" value="16" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -325,7 +315,6 @@
     <MESSAGE value="in class 13.05.24" />
     <MESSAGE value="20.05.24" />
     <MESSAGE value="points and menu" />
-    <MESSAGE value="leaderboard v2" />
-    <option name="LAST_COMMIT_MESSAGE" value="leaderboard v2" />
+    <option name="LAST_COMMIT_MESSAGE" value="points and menu" />
   </component>
 </project>
