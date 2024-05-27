@@ -135,14 +135,6 @@ class Board:
                 value = self.deck.cards[val].value + 1
                 color = self.deck.cards[val].color
                 j = len(i.cards) - 1
-                move = list()
-                while j >= 0 and value == i.cards[j].value and color == i.cards[j].color:
-                    move.append(i.idList[j])
-                    value += 1
-                    j -= 1
-                for j in self.cards:
-                    if j.grid == i.grid and j.id not in move:
-                        self.canvas.dtag(j.id, "movable")
                 i.CoordY = 70 + (i.interspace * (len(i.cards) - 1)) + (10 * len(i.HiddenCards))
                 tmpCard = Card(self.deck.cards[val].color, self.deck.cards[val].value)
                 i.cards.append(tmpCard)
@@ -170,6 +162,7 @@ class Board:
         else:
             print("zakryj wszystkie pola")
         for i in self.places:
+            self.add_movable_cards(i)
             self.change_interspace(i)
 
     def move_start(self, event):
@@ -279,20 +272,9 @@ class Board:
             self.places[aux].cards.extend(self.move_data["cards"])
             for i in self.move_data["cards"]:
                 self.places[aux].idList.append(i.id)
-            for i in self.places[aux].idList:
-                    self.canvas.dtag(i, "movable")
 
             if self.places[aux].cards[-1] != None:
-                i = len(self.places[aux].cards) - 1
-                val = self.places[aux].cards[-1].value
-                col = self.places[aux].cards[-1].color
-                mov = list()
-                while i >= 0 and self.places[aux].cards[i].value == val and self.places[aux].cards[i].color == col:
-                    mov.append(self.places[aux].idList[i])
-                    i -= 1
-                    val += 1
-                for i in mov:
-                    self.canvas.addtag_withtag("movable", i)
+                self.add_movable_cards(self.places[aux])
 
 
             self.places[aux].lastCard = self.move_data["cards"][-1]
@@ -409,9 +391,7 @@ class Board:
     def check_if_card_is_last(self):
         for i in self.places:
             if i.lastCard != None:
-                if (i.lastCard.color == self.move_data["card"].color and
-                    i.lastCard.value == self.move_data["card"].value and
-                    i.grid == self.move_data["card"].grid):
+                if self.move_data["card"].id == i.idList[-1]:
                     return True
         return False
 
@@ -450,7 +430,6 @@ class Board:
             self.cards = newSelfCards
             #for i in self.cards:
                 #print("val: " +str(i.value) +", col: " +str(i.color) + ", id: " + str(i.id))
-            place.CoordY -= place.interspace * (len(place.cards))
             place.cards.clear()
             place.idList.clear()
             place.lastCard = None
@@ -473,7 +452,6 @@ class Board:
                     newSelfCards.append(j)
             self.cards = newSelfCards
             place.lastCard = place.cards[-1]
-            self.add_movable_cards(place)
         #print("len idList:")
         #print(len(place.idList))
         #print("len cards:")
@@ -483,17 +461,18 @@ class Board:
     def add_movable_cards(self, place):
         listOfMovable = list()
         i = len(place.cards) - 1
+        val = 0
         if place.lastCard != None:
             val = place.lastCard.value
-        while i >= 0 and place.cards[i].value == val \
-                and place.cards[i].color == place.lastCard.color:
-            listOfMovable.append(place.idList[i])
-            i -= 1
-            val += 1
-        for i in place.idList:
-            self.canvas.dtag(i, "movable")
-        for i in listOfMovable:
-            self.canvas.addtag_withtag("movable", i)
+            while i >= 0 and place.cards[i].value == val \
+                    and place.cards[i].color == place.lastCard.color:
+                listOfMovable.append(place.idList[i])
+                i -= 1
+                val += 1
+            for i in place.idList:
+                self.canvas.dtag(i, "movable")
+            for i in listOfMovable:
+                self.canvas.addtag_withtag("movable", i)
     def show_hidden_cards(self,place):
         place.lastCard = place.HiddenCards[-1]
         place.cards.append(place.HiddenCards[-1])
@@ -503,9 +482,7 @@ class Board:
         #temporary Card
         auxCard = self.hiddenCards[0]
         for i in self.hiddenCards:
-            if (i.value == place.HiddenCards[-1].value and
-                    i.color == place.HiddenCards[-1].color and
-                    i.grid == place.grid):
+            if i.id == place.HiddenIdList[-1]:
                 auxCard = i
 
         self.cards.append(auxCard)

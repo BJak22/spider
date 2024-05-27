@@ -5,8 +5,6 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="9b1bc026-42a5-46ce-ab18-f99c73858a3c" name="Changes" comment="leaderboard">
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/spider.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/spider.iml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Board.py" beforeDir="false" afterPath="$PROJECT_DIR$/Board.py" afterDir="false" />
     </list>
@@ -290,7 +288,14 @@
       <option name="project" value="LOCAL" />
       <updated>1716636022477</updated>
     </task>
-    <option name="localTasksCounter" value="16" />
+    <task id="LOCAL-00016" summary="leaderboard">
+      <created>1716817558932</created>
+      <option name="number" value="00016" />
+      <option name="presentableId" value="LOCAL-00016" />
+      <option name="project" value="LOCAL" />
+      <updated>1716817558932</updated>
+    </task>
+    <option name="localTasksCounter" value="17" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -315,6 +320,7 @@
     <MESSAGE value="in class 13.05.24" />
     <MESSAGE value="20.05.24" />
     <MESSAGE value="points and menu" />
-    <option name="LAST_COMMIT_MESSAGE" value="points and menu" />
+    <MESSAGE value="leaderboard" />
+    <option name="LAST_COMMIT_MESSAGE" value="leaderboard" />
   </component>
 </project>
