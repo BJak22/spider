@@ -383,20 +383,21 @@ class Board:
                 self.won = True
                 self.save_score()
 
-            #for i in self.places:
-                #print("grid: " + str(i.grid))
-                #print("len(i.HiddenCards): " + str(len(i.HiddenCards)))
-                #print("len(i.HiddenIdList): " + str(len(i.HiddenIdList)))
-            #print("liczba kart: ")
-            #print(len(self.cards))
-            #for i in self.places:
-                #print("------")
-                #print("len: "+str(len(i.idList)))
-                #for j in i.idList:
-                    #for k in self.cards:
-                        #if j == k.id:
-                            #print(k.value)
-            #print("-----next_move------")
+            for i in self.places:
+                print("grid: " + str(i.grid))
+                print("len(i.HiddenCards): " + str(len(i.HiddenCards)))
+                print("len(i.HiddenIdList): " + str(len(i.HiddenIdList)))
+            print("Łączna liczba kart: ")
+            print(len(self.cards))
+            for i in self.places:
+                print("------")
+                print("len idList: "+str(len(i.idList)))
+                print("values of cards:")
+                for j in i.idList:
+                    for k in self.cards:
+                        if j == k.id:
+                            print(k.value)
+            print("-----next_move------")
 
             #lista = self.canvas.find_withtag("movable")
             #for i in range(21):
@@ -468,11 +469,11 @@ class Board:
                         self.cards.remove(j)
             place.lastCard = place.cards[-1]
             self.add_movable_cards(place)
-        print("len idList:")
-        print(len(place.idList))
-        print("len cards:")
-        print(len(place.cards))
-        print(place.lastCard)
+        #print("len idList:")
+        #print(len(place.idList))
+        #print("len cards:")
+        #print(len(place.cards))
+        #print(place.lastCard)
 
     def add_movable_cards(self, place):
         listOfMovable = list()
