@@ -39,16 +39,15 @@ class App:
         #self.board = Board(30, 480, 99, self.board_frame, self.timer, self.mine_counter)
         self.menu = MyMenu(self)
         self.window.config(menu=self.menu.menubar)
-        self.board = Board(self.window, 4)
+        self.board = Board(self.window, 1, False)
         self.window.mainloop()
 
 # commands to crete new game on certain levels
     def beginner(self):
-        self.abandon_game()
         self.board.save_score()
         self.board.canvas.destroy()
         self.board.stop_threading()
-        self.board = Board(self.window, 1)
+        self.board = Board(self.window, 1, True)
         #self.space_label = Label(self.upper_frame, width=10)
         #self.space_label.grid(row=0, column=1)
         #self.mine_counter.restart(10)
@@ -61,11 +60,10 @@ class App:
         #self.board = Board(8, 64, 10, self.board_frame, self.timer, self.mine_counter)
 
     def intermediate(self):
-        self.abandon_game()
         self.board.save_score()
         self.board.canvas.destroy()
         self.board.stop_threading()
-        self.board = Board(self.window, 2)
+        self.board = Board(self.window, 2, True)
         #self.space_label.destroy()
         #self.space_label = Label(self.upper_frame, width=40)
         #self.space_label.grid(row=0, column=1)
@@ -79,11 +77,10 @@ class App:
         #self.board = Board(16, 256, 40, self.board_frame, self.timer, self.mine_counter)
 
     def expert(self):
-        self.abandon_game()
         self.board.save_score()
         self.board.canvas.destroy()
         self.board.stop_threading()
-        self.board = Board(self.window, 4)
+        self.board = Board(self.window, 4, True)
         self.board.save_score()
         #self.space_label.destroy()
         #self.space_label = Label(self.upper_frame, width=100)
@@ -168,15 +165,6 @@ class App:
                "\nBest time: " + str(expert_time) + \
                "\n" + str(expert_percent) + "% of wins\n"
         tk.messagebox.showinfo(title="LEADERBOARD", message=text)
-
-    def abandon_game(self):
-        if not self.board.won and not self.board.firstClick:
-            if self.board.level == 1:
-                self.board.beginner_loses += 1
-            if self.board.level == 2:
-                self.board.intermediate_loses += 1
-            if self.board.level == 4:
-                self.board.expert_loses += 1
 
 
 app = App()

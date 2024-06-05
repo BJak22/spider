@@ -8,12 +8,17 @@ from Stack import Stack
 from state import State
 import time
 import threading
+import csv
 
 class Board:
-    def __init__(self, window, level):
+    def __init__(self, window, level, player):
+        self.player = player
+        self.moves = list()
+        self.move_list = list()
         self.stop_thread = False
         self.window = window
-        self.window.bind("<Control-z>", self.restoreState)
+        if self.player:
+            self.window.bind("<Control-z>", self.restoreState)
         self.points = 500
 
         # reading stats for leaderboard
@@ -31,6 +36,7 @@ class Board:
         self.expert_time = int(f.readline())
         self.expert_wins = int(f.readline())
         self.expert_loses = int(f.readline())
+
         f.close()
 
         self.firstClick = True
@@ -85,8 +91,14 @@ class Board:
                           "startPlace": Queue(1, self.empty, None, 11,0),
                           "card": LabelCard(None, "T", 0, None, None, self.Images[-1], 50, 70, -1)}
         self.add_cards("movable")
-        self.move_bind("movable")
-        self.add_cards_bind("addCards")
+        if self.player:
+            self.move_bind("movable")
+            self.add_cards_bind("addCards")
+        self.find_possible_moves()
+        self.write_moves()
+        if not self.player:
+            self.thread2 = threading.Thread(target = self.move_ai, daemon=True)
+            self.thread2.start()
 
     def find_image(self, card):
         ind = self.colors.index(card.color)
@@ -165,39 +177,90 @@ class Board:
             self.add_movable_cards(i)
             self.change_interspace(i)
 
-    def move_start(self, event):
-        self.points -= 1
+    def move_ai(self):
+        number_of_moves = 0
+        #print("tu:")
+        #print(len(self.moves))
+        while len(self.moves) != 0:
+            move = self.moves[0]
+            print("from grid: " +str(move.from_grid))
+            print("to grid: " +str(move.to_grid))
+            print("value: " +str(move.value))
+            listOfMovable = self.canvas.find_withtag("movable")
+            id_c = 0
+            for i in self.cards:
+                if move.from_grid == i.grid and move.value == i.value and i.id in listOfMovable:
+                    id_c = i.id
+                    print("id:" +str(i.id))
+                    self.move_data["object"] = self.canvas.find_withtag(i.id)
+                    if id_c == self.places[move.from_grid].idList[-1]:
+                        print("ostatnia")
+                    else:
+                        print("nie jest ostatnia")
+            self.before_move_procedure()
+            self.ai_make_move(move)
+            self.move_stop(0)
+            number_of_moves += 1
+            if len(self.cards) == 0:
+                print("ends")
+            self.moves.clear()
+            self.find_possible_moves()
+            if number_of_moves == 0:
+                self.window.mainloop()
+                number_of_moves += 1
+            else:
+                self.window.update()
+            #   Information that bot've won
+            # else:
+            #   Information that bot have lost
+            # if number_of_moves > 100:
+            #   Information that bot have lost
+            #   break
+
+    def ai_make_move(self, move):
+        time.sleep(2)
+        for i in self.move_list:
+            label = self.canvas.find_withtag(i)
+            self.canvas.moveto(i, self.places[move.to_grid].CoordX - 2, self.places[move.to_grid].CoordY +
+                               ((self.move_list.index(i) + 1) * self.places[move.to_grid].interspace))
+
+    def before_move_procedure(self):
+        self.move_list.clear()
         if self.firstClick:
             #print("pierwszy ruch")
+            if self.level == 1:
+                self.beginner_loses +=1
+            elif self.level == 2:
+                self.intermediate_loses +=1
+            else:
+                self.expert_loses +=1
             self.firstClick = False
             self.startTime = time.time()
             self.thread = threading.Thread(target=self.timer, daemon=True)
             self.thread.start()
-        ListcardsIds= list()
+        ListcardsIds = list()
         for i in self.places:
             ListcardsIds.extend(i.idList)
-        self.move_data["object"] = self.canvas.find_closest(event.x, event.y)
-        self.move_data["x"] = event.x
-        self.move_data["y"] = event.y
+        #print(self.move_data["object"])
         cardCoords = self.canvas.coords(self.move_data["object"])
+        #print(cardCoords)
         self.move_data["startX"] = cardCoords[0]
         self.move_data["startY"] = cardCoords[1]
         aux = (int(cardCoords[0]) - 150)
         aux = int(aux / 150)
         cardId = self.move_data["object"][-1]
-        #print(self.move_data["object"][-1])
-        #for i in self.places:
-            #if cardId in i.idList:
-                #print("obiekt jest karta")
+        # print(self.move_data["object"][-1])
+        # for i in self.places:
+        # if cardId in i.idList:
+        # print("obiekt jest karta")
         self.move_data["startPlace"] = self.places[aux]
-        self.move_list = list()
-        #print(self.move_data["object"][-1])
+        # print(self.move_data["object"][-1])
         for i in self.cards:
             if cardId == i.id:
-                #print("here")
+                # print("here")
                 self.move_data["card"] = i
-        #print("self.move_data[card]: " + str(self.move_data["card"].value))
-        #print("self.places[aux].lastCard: " + str(self.places[aux].lastCard.value))
+        # print("self.move_data[card]: " + str(self.move_data["card"].value))
+        # print("self.places[aux].lastCard: " + str(self.places[aux].lastCard.value))
         idList = list()
         if self.check_if_card_is_last():
             self.move_list.append(self.move_data["object"])
@@ -205,7 +268,8 @@ class Board:
                 self.canvas.tag_raise(self.move_data["object"])
             idList.append(self.move_data["object"])
         else:
-            idList.extend(self.canvas.find_overlapping(event.x, event.y, event.x, 700))
+            idList.extend(self.canvas.find_overlapping(cardCoords[0], cardCoords[1], cardCoords[0], 700))
+            print("dlugosc move list:" +str(len(self.move_list)))
             removeList = list()
             checkList = self.canvas.find_withtag("movable")
             for i in idList:
@@ -230,6 +294,12 @@ class Board:
         for i in self.move_data["cards"]:
             while len(self.canvas.find_above(i.id)) != 0:
                 self.canvas.tag_raise(i.id)
+    def move_start(self, event):
+        self.move_data["object"] = self.canvas.find_closest(event.x, event.y)
+        #print(self.move_data["object"])
+        self.move_data["x"] = event.x
+        self.move_data["y"] = event.y
+        self.before_move_procedure()
 
     def partition(self, array, low, high):
         pivot = array[high]
@@ -265,10 +335,16 @@ class Board:
             self.places[aux].CoordY = 60 + (self.places[aux].interspace * (len(self.places[aux].cards))) + (10 * len(self.places[aux].HiddenCards))
             if(self.places[aux] == self.move_data["startPlace"]):
                 self.places[aux].CoordY -= self.places[aux].interspace
-            x = self.places[aux].CoordX - cardCoords[0] + 50
+            else:
+                self.points -= 1
             y = self.places[aux].CoordY - cardCoords[1] + 70
+            x = 0
+            if self.player:
+                x = self.places[aux].CoordX - cardCoords[0] + 50
             for i in self.move_list:
                 self.canvas.move(i, x, y)
+                if self.places[aux].interspace == 15:
+                    self.make_cards_closer(self.places[aux])
             self.places[aux].cards.extend(self.move_data["cards"])
             for i in self.move_data["cards"]:
                 self.places[aux].idList.append(i.id)
@@ -278,6 +354,7 @@ class Board:
 
 
             self.places[aux].lastCard = self.move_data["cards"][-1]
+            print(self.places[aux].lastCard.value)
             for i in self.move_data["cards"]:
                 i.grid = self.places[aux].grid
 
@@ -288,6 +365,7 @@ class Board:
                 for i in self.move_data["cards"]:
                     self.move_data["startPlace"].cards.pop()
                     self.move_data["startPlace"].idList.remove(i.id)
+                self.move_data["startPlace"].CoordY -= self.move_data["startPlace"].interspace * lenOfMoved
                 self.move_data["startPlace"].lastCard = self.move_data["startPlace"].cards[-1]
                 self.add_movable_cards(self.move_data["startPlace"])
 
@@ -305,6 +383,14 @@ class Board:
             y = self.move_data["startY"] - cardCoords[1]
             for i in self.move_list:
                 self.canvas.move(i, x, y)
+            if self.move_data["startPlace"].interspace == 15:
+                self.make_cards_closer(self.move_data["startPlace"])
+
+    def make_cards_closer(self, place):
+        mov = self.move_list[1:]
+        for i in mov:
+            self.canvas.move(i, 0, -15)
+
 
     def check_if_completed(self, place):
         val = 1
@@ -343,45 +429,52 @@ class Board:
                 self.move_data["startY"] = 0
                 self.move_data["Value"] = 0
                 self.move_data["startPlace"] = Queue(1, self.empty, None, 11,0)
+                print("czysto")
                 for i in self.places:
                     self.change_interspace(i)
             self.canvas.itemconfig(self.pointsLabel, text=self.points)
             if len(self.cards) == 0:
                 self.stop_threading()
-                tk.messagebox.showinfo(title="YOU'VE WON!", message="Congrats :)")
-                self.window.unbind("<Control-z>")
+                if self.player:
+                    self.window.unbind("<Control-z>")
+                    tk.messagebox.showinfo(title="YOU'VE WON!", message="Congrats :)")
                 if self.level == 1 and (self.points > self.beginner_score):
                     self.beginner_score = self.points
                     self.beginner_time = self.time
                     self.beginner_wins += 1
+                    self.beginner_loses -= 1
                 if self.level == 2 and (self.points > self.intermediate_score):
                     self.intermediate_score = self.points
                     self.intermediate_time = self.time
                     self.intermediate_wins += 1
+                    self.intermediate_loses -= 1
                 if self.level == 4 and (self.points > self.expert_score):
                     self.expert_score = self.points
                     self.expert_time = self.time
                     self.expert_wins += 1
+                    self.expert_loses -= 1
                 self.won = True
                 self.save_score()
 
             for i in self.places:
                 self.add_movable_cards(i)
-                print("grid: " + str(i.grid))
-                print("len(i.HiddenCards): " + str(len(i.HiddenCards)))
-                print("len(i.HiddenIdList): " + str(len(i.HiddenIdList)))
-            print("Łączna liczba kart: ")
-            print(len(self.cards))
-            for i in self.places:
-                print("------")
-                print("len idList: "+str(len(i.idList)))
-                print("values of cards:")
-                for j in i.idList:
-                    for k in self.cards:
-                        if j == k.id:
-                            print(k.value)
-            print("-----next_move------")
-
+                #print("grid: " + str(i.grid))
+                #print("len(i.HiddenCards): " + str(len(i.HiddenCards)))
+                #print("len(i.HiddenIdList): " + str(len(i.HiddenIdList)))
+            #print("Łączna liczba kart: ")
+            #print(len(self.cards))
+            #for i in self.places:
+                #print("------")
+                #print("len idList: "+str(len(i.idList)))
+                #print("values of cards:")
+                #for j in i.idList:
+                   #for k in self.cards:
+                        #if j == k.id:
+                            #print(k.value)
+            #print("-----next_move------")
+            self.find_possible_moves()
+            self.write_moves()
+            self.moves.clear()
             #lista = self.canvas.find_withtag("movable")
             #for i in range(21):
                 #if i>10 and i not in lista:
@@ -628,3 +721,167 @@ class Board:
         f.write(str(self.expert_wins)+'\n')
         f.write(str(self.expert_loses)+'\n')
         f.close()
+
+    def find_possible_moves(self):
+        mov = self.canvas.find_withtag("movable")
+        last = list()
+        for i in self.places:
+            if i.lastCard != None:
+                last.append(i.lastCard.value)
+        for i in self.places:
+            if i.lastCard != None:
+                for j in i.idList:
+                    num = i.idList.index(j)
+                    tmpLast = last
+                    ind = 0
+                    while j in mov and ((i.cards[num].value + 1) in tmpLast and i.grid != tmpLast.index(i.cards[num].value + 1)):
+                        #print("FROM grid: " + str(i.grid))
+                        from_grid = i.grid
+                        #print("TO grid: " + str(ind + (tmpLast.index(i.cards[num].value + 1))))
+                        to_grid = ind + (tmpLast.index(i.cards[num].value + 1))
+                        #print("value: " + str(i.cards[num].value))
+                        value = i.cards[num].value
+                        complete = 0
+                        if (self.find_len_of_movable_to(self.places[ind + tmpLast.index(i.cards[num].value + 1)],
+                                                        i.cards[num:])) == 13:
+                            #print("TEN RUCH ZDEJMIE KARTY")
+                            complete = 1
+                        else:
+                            xd = 1
+                            #print("NIE ZDEJMUJE KART")
+                        #print("kolor przenoszonej karty: " + str(i.cards[num].color))
+                        move_color = i.cards[num].color
+                        #print("kolor karty na ktora odkładasz: " +
+                            #str(self.places[ind + tmpLast.index(i.cards[num].value + 1)].lastCard.color))
+                        if self.places[ind + tmpLast.index(i.cards[num].value + 1)].lastCard != None:
+                            to_color = self.places[ind + tmpLast.index(i.cards[num].value + 1)].lastCard.color
+                        else:
+                            to_color = 'N'
+                        #print("dlugosc odslonietej kolejki: " + str(self.find_len_of_movable_from(i, num)))
+                        len_from = self.find_len_of_movable_from(i, num)
+                        #print("długosc kolejki do ktorej dolozyles karte: " +
+                            #str(self.find_len_of_movable_to(self.places[ind + tmpLast.index(i.cards[num].value + 1)], i.cards[num:])))
+                        len_to = self.find_len_of_movable_to(self.places[ind + tmpLast.index(i.cards[num].value + 1)], i.cards[num:])
+                        ind += tmpLast.index(i.cards[num].value+1)+1
+                        show = "nothing"
+                        if num == 0:
+                            if len(i.HiddenCards) == 0:
+                                #print("Ruch wytowrzy wolne pole")
+                                show = "empty_spot"
+                            else:
+                                #print("Ruch odsloni nowa karte")
+                                show = "new_card"
+                        else:
+                            xd =1
+                            #print("ruch nie odslania kart ani nie wytwarza wolengo pola")
+                        self.moves.append(
+                            Move(from_grid, to_grid, value, complete, move_color, to_color, len_from, len_to, show))
+                        tmpLast = tmpLast[tmpLast.index(i.cards[num].value+1)+1:]
+            if i.lastCard == None:
+                for j in self.places:
+                    for k in j.idList:
+                        if k in mov:
+                            #("FROM grid: " + str(j.grid))
+                            from_grid = j.grid
+                            #print("TO grid: " + str(i.grid))
+                            to_grid = i.grid
+                            #print("value: " + str(j.cards[j.idList.index(k)].value))
+                            value = j.cards[j.idList.index(k)].value
+                            #print("TEN RUCH NIE ZDEJMUJE KART")
+                            complete = 0
+                            #print("kolor przenoszonej karty: " + str(j.cards[j.idList.index(k)].color))
+                            move_color = j.cards[j.idList.index(k)].color
+                            #print("odkladasz na puste pole")
+                            to_color = "None"
+                            #print("dlugosc odslonietej kolejki: " + str(self.find_len_of_movable_from(j, j.idList.index(k))))
+                            len_from = self.find_len_of_movable_from(j, j.idList.index(k))
+                            #print("długosc kolejki do ktorej dolozyles karte: " +
+                                        #str(len(j.cards) - j.idList.index(k)))
+                            len_to = len(j.cards) - j.idList.index(k)
+                            show = "nothing"
+                            if j.idList.index(k) == 0:
+                                if len(j.HiddenCards) == 0:
+                                    #print("Ruch wytowrzy wolne pole")
+                                    show = "empty_spot"
+                                else:
+                                    #print("Ruch odsloni nowa karte")
+                                    show = "new_card"
+                            else:
+                                xd = 1
+                                #print("ruch nie odslania kart ani nie wytwarza wolengo pola")
+                            self.moves.append(
+                                Move(from_grid, to_grid, value, complete, move_color, to_color, len_from, len_to, show))
+        #print("-----------Koniec Listy Ruchow------------")
+
+
+    def write_moves(self):
+        with open('moves.csv', 'a', encoding='utf-8') as csvfile:
+            fieldnames = ["from_grid", "to_grid", "value", "complete", "move_color", "drop_color", "len_from",
+                                "len_to", "show"]
+            csvwriter = csv.DictWriter(csvfile, fieldnames = fieldnames)
+            #print(len(self.moves))
+            for i in self.moves:
+                csvwriter.writerow({"from_grid": i.from_grid, "to_grid" : i.to_grid, "value" : i.value,
+                                    "complete" : i.complete, "move_color" : i.move_color,
+                                   "drop_color" : i.drop_color, "len_from" : i.len_from, "len_to" : i.len_to,
+                                    "show" : i.show})
+    def check_if_will_complete(self, place):
+        val = 2
+        col = place.lastCard.color
+        leng = len(place.cards) - 1
+        while val < 14 and leng >= 0:
+            if place.cards[leng].value != val or place.cards[leng].color != col:
+                return False
+            val += 1
+            leng -= 1
+        if val == 13:
+            return True
+        return False
+
+    #change this
+    def find_len_of_movable_to(self, place,cards):
+        tmpCards = copy.deepcopy(place.cards)
+        tmpCards.extend(cards)
+        #for i in tmpCards:
+            #print(i.value)
+        leng = 0
+        i = len(tmpCards) -1
+        val = 0
+        if tmpCards[-1] != None and place.lastCard != None:
+            val = tmpCards[-1].value
+            while i >= 0 and tmpCards[i].value == val \
+                    and tmpCards[i].color == place.lastCard.color:
+                leng +=1
+                i -= 1
+                val += 1
+        if leng == 0:
+            leng += 1
+        return leng
+
+    def find_len_of_movable_from(self, place, ind):
+        tmpCards = copy.deepcopy(place.cards[:ind])
+        leng = 0
+        i = len(tmpCards) -1
+        val = 0
+        if len(tmpCards) != 0:
+            val = tmpCards[-1].value
+            while i >= 0 and tmpCards[i].value == val \
+                    and tmpCards[i].color == tmpCards[-1].color:
+                leng += 1
+                i -= 1
+                val += 1
+        if len(place.HiddenIdList) >0 and len(tmpCards) == 0:
+            leng +=1
+        return leng
+
+class Move:
+    def __init__(self, from_grid, to_grid, value, complete, move_color, drop_color, len_from, len_to, show):
+        self.from_grid = from_grid
+        self.to_grid = to_grid
+        self.value = value
+        self.complete = complete
+        self.move_color = move_color
+        self.drop_color = drop_color
+        self.len_from = len_from
+        self.len_to = len_to
+        self.show = show

@@ -1,5 +1,6 @@
 import random
 from Card import Card
+import secrets
 
 
 class Deck:
@@ -50,7 +51,7 @@ class Deck:
                     while j < 14:
                         self.cards.append(Card(color, j))
                         j += 1
-        random.shuffle(self.cards)
+        secrets._sysrand.shuffle(self.cards)
 
         self.cardsLeft = len(self.cards)
         print(self.cardsLeft)
