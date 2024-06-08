@@ -20,7 +20,7 @@ class Board:
     def __init__(self, window, level, player):
         self.last_move = None
         self.second_last_move = None
-        self.predictor = joblib.load("solitaire")
+        self.predictor = joblib.load("solitaire4.0")
         self.player = player
         self.moves = list()
         self.move_list = list()
@@ -190,6 +190,12 @@ class Board:
         number_of_moves = 0
         counter = 0
         while len(self.moves) != 0:
+            if self.stop_thread == True:
+                break
+            if not self.firstClick:
+                time.sleep(2)
+            if self.stop_thread == True:
+                break
             self.moves.clear()
             self.find_possible_moves()
             counter += 1
@@ -223,11 +229,15 @@ class Board:
                     i.show = 2
                 if i.show == 'empty_spot':
                     i.show = 3
+                color = 0
+                if i.move_color == i.drop_color:
+                    color = 8
                 data = pd.DataFrame({
                     'value': [i.value],
-                    'complete': [i.complete],
-                    'move_color': [i.move_color],
-                    'drop_color': [i.drop_color],
+                    #'complete': [i.complete],
+                    #'move_color': [i.move_color],
+                    #'drop_color': [i.drop_color],
+                    'color' : color,
                     'len_from': [i.len_from],
                     'len_to': [i.len_to],
                     'show': [i.show],
@@ -296,6 +306,7 @@ class Board:
                     counter = 0
                 else:
                     self.stop_threading()
+                    tk.messagebox.showinfo(title="Inforamtion", message="LOST")
                     break
                 if empty == 10:
                     continue
@@ -341,11 +352,11 @@ class Board:
             else:
                 self.window.update()
             if counter > 50:
+                tk.messagebox.showinfo(title="Inforamtion", message="LOST")
                 self.stop_threading()
                 break
 
     def ai_make_move(self, move):
-        time.sleep(2)
         for i in self.move_list:
             label = self.canvas.find_withtag(i)
             self.canvas.moveto(i, self.places[move.to_grid].CoordX - 2, self.places[move.to_grid].CoordY +
