@@ -54,10 +54,3 @@ class Deck:
         secrets._sysrand.shuffle(self.cards)
 
         self.cardsLeft = len(self.cards)
-        print(self.cardsLeft)
-
-
-#test = Deck(1)
-#print(test.colors)
-#test2 = Deck(2)
-#print(test2.colors)
