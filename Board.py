@@ -18,6 +18,7 @@ import random
 
 class Board:
     def __init__(self, window, level, player):
+        self.xd = 1
         self.last_move = None
         self.second_last_move = None
         self.predictor = joblib.load("solitaire4.0")
